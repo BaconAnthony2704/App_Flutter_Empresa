@@ -273,7 +273,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
 
   Widget _obtenerImagen({ProductoModel productoEdit=null}) {
     if(productoEdit!=null){
-      return FadeInImage(placeholder: AssetImage('assets/img/silver_ball.gif'), 
+      return FadeInImage(placeholder: AssetImage('assets/img/silver_balls.gif'), 
       image: NetworkImage(productoEdit.urlimagen),
       height: 180,
       fit: BoxFit.cover,);

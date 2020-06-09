@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
+import 'package:mantenimiento_empresa/src/providers/login_bloc.dart';
 import 'package:mantenimiento_empresa/src/providers/usuario_provider.dart';
 import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
     UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
+    LoginBloc login=Provider.of<LoginBloc>(context);
     
     return WillPopScope(
       onWillPop:()async=> await Environment().salirApp(context, "Salir", "Deseas salir de la aplicacion?"),
@@ -22,7 +24,7 @@ class LoginPage extends StatelessWidget {
         body: Stack(
           children: <Widget>[
             _crearFondo(context),
-            _loginForm(context,empresaProvider,usuarioProvider),
+            _loginForm(context,empresaProvider,usuarioProvider,login),
           ],
         )
       ),
@@ -66,7 +68,8 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _loginForm(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider) {
+  Widget _loginForm(BuildContext context, EmpresaProvider empresaProvider,
+  UsuarioProvider usuarioProvider, LoginBloc login) {
     final size=MediaQuery.of(context).size;
     return SingleChildScrollView(
       child: Column(
@@ -90,11 +93,11 @@ class LoginPage extends StatelessWidget {
             children: <Widget>[
               Text("Ingreso",style: Theme.of(context).textTheme.headline6,),
               SizedBox(height: 60.0,),
-              _crearEmail(),
+              _crearEmail(login),
                SizedBox(height: 60.0,),
-              _crearPassword(context),
+              _crearPassword(context,login),
                SizedBox(height: 60.0,),
-              _crearBoton(context,empresaProvider,usuarioProvider),
+              _crearBoton(context,empresaProvider,usuarioProvider,login),
               SizedBox(height: 30.0,),
               _registrarse(context),
               
@@ -106,8 +109,11 @@ class LoginPage extends StatelessWidget {
     );
   }
 
- Widget _crearEmail() {
-   return Container(
+ Widget _crearEmail(LoginBloc login) {
+   return StreamBuilder<String>(
+     stream: login.emailStream,
+     builder: (context,snapshot){
+       return Container(
          padding: EdgeInsets.symmetric(horizontal: 20.0),
          child: TextField(
            keyboardType: TextInputType.emailAddress,
@@ -115,33 +121,38 @@ class LoginPage extends StatelessWidget {
              icon: Icon(Icons.alternate_email),
              hintText: "Ejemplo@correo.com",
              labelText: "Correo electronico",
-             
+             errorText: snapshot.error
            ),
-           onChanged: (valor){
-             email=valor;
-           },
+           onChanged: login.changeEmail,
            controller: emailController,),
-   );
- }
- Widget _crearPassword(BuildContext context) {
-   
-    return Container(
-     padding: EdgeInsets.symmetric(horizontal: 20.0),
-     child: TextField(
-       obscureText: true,
-       decoration: InputDecoration(
-         icon: Icon(Icons.lock_outline),
-         labelText: 'Contraseña',
-       ),
-       onChanged: (valor){
-         password=valor;
-       },
-       controller: passwordController,),
+        );
+     }
     );
+ }
+ Widget _crearPassword(BuildContext context, LoginBloc login) {
+   return StreamBuilder<String>(
+     stream: login.passwordStream,
+     builder: (context,snapshot){
+       return Container(
+        padding: EdgeInsets.symmetric(horizontal: 20.0),
+        child: TextField(
+          obscureText: true,
+          decoration: InputDecoration(
+            icon: Icon(Icons.lock_outline),
+            labelText: 'Contraseña',
+            errorText: snapshot.error
+          ),
+          onChanged: login.changePassword,
+          controller: passwordController,),
+        );
+     }
+    );
+    
 
    
  }
- Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider){
+ Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
+                    UsuarioProvider usuarioProvider, LoginBloc login){
        return RaisedButton(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 15.0),
@@ -154,19 +165,19 @@ class LoginPage extends StatelessWidget {
         color: Theme.of(context).primaryColor,
         textColor: Colors.white,
         onPressed:(){
-          _loginBtn(context,empresaProvider,usuarioProvider);
+          _loginBtn(context,empresaProvider,usuarioProvider,login);
         },
   );
  }
- _loginBtn(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider)async{
+ _loginBtn(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider, LoginBloc login)async{
    
-   if(this.email==null && this.password==null){
+   if(login.email==null && login.password==null){
      await Environment().mostrarAlerta(context, "Completa los campos");
    }else{
      bool acceso=false,integridad;
-     integridad=await usuarioProvider.verificarIntegridad(email);
+     integridad=await usuarioProvider.verificarIntegridad(login.email);
      
-    acceso=await empresaProvider.obtenerUsuarioRegistrado(email, password);
+    acceso=await empresaProvider.obtenerUsuarioRegistrado(login.email, login.password);
     if(acceso){
       _prefs.ultimaPagina='/';
       Navigator.of(context).pushReplacementNamed('/');
@@ -177,7 +188,7 @@ class LoginPage extends StatelessWidget {
       passwordController.clear();
       if(!integridad && usuarioProvider.idempresa==0){
        //await Environment().mostrarAlerta(context, "Solicite permiso de acceso");
-       await Environment().mostrarEmpresas(context,empresaProvider,email,password);
+       await Environment().mostrarEmpresas(context,empresaProvider,login.email,login.password);
      }else{
        await Environment().mostrarAlerta(context, "Solicite permiso de acceso");
      }
