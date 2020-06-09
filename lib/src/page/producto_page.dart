@@ -74,7 +74,7 @@ class _ProductoPageState extends State<ProductoPage> {
         return ContenedorPrincipal();
         break;
       case 1:
-        return ContenedorPrincipalPromocion();
+        return ContenedorPrincipalPromocional();
         break;
     }
   }

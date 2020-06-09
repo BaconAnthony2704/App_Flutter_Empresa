@@ -71,15 +71,32 @@ class _UploadProductExcelState extends State<UploadProductExcel> {
       ),
       body: ListView.builder(
         itemBuilder: (context,index){
-          return ListTile(
-            title: Text("${listaProducto[index].nombre}".toUpperCase()),
-            subtitle: Row(
-              children: <Widget>[
-                Text("Precio: "),
-                Expanded(child: Text("\$ ${listaProducto[index].precio}"))
-              ],
-            ),
-            trailing: (listaProducto[index].isoferta==1)?Icon(Icons.local_offer):null,
+          return Column(
+            children: <Widget>[
+              Stack(
+                children: <Widget>[
+                  ListTile(
+                    title: Text("${listaProducto[index].nombre}".toUpperCase()),
+                    subtitle: Column(
+                      children: <Widget>[
+                        conceptos("Precio","\$ ${(listaProducto[index].precio).toStringAsPrecision(2)}"),
+                        conceptos("Cantidad","${listaProducto[index].cantidad}"),
+                        conceptos("Tipo", "${listaProducto[index].tipo}"),
+                        conceptos("Categoria","${listaProducto[index].categoria}"),
+                        conceptos("Descripcion", "${listaProducto[index].descripcion}")
+                      ],
+                    ),
+                  ),
+                  (listaProducto[index].isoferta==1)
+                  ?Positioned(
+                    right: 0,
+                    child: Icon(Icons.local_offer,color: Colors.red),
+                  )
+                  :Container()
+                ],
+              ),
+              Divider(),
+            ],
           );
         },
         itemCount: listaProducto.length,
@@ -106,11 +123,16 @@ class _UploadProductExcelState extends State<UploadProductExcel> {
                 for(int i=1;i<excel.tables[table].rows.length;i++){
                   productModel=new ProductoModel(
                     nombre: excel.tables[table].rows[i][0].toString(),
-                    precio: double.parse(excel.tables[table].rows[i][1].toString()).roundToDouble(),
-                    isoferta: int.parse(excel.tables[table].rows[i][2].toString()).truncate(),
-                    descripcion: excel.tables[table].rows[i][3].toString(),
-                    activo: int.parse(excel.tables[table].rows[i][4].toString()).truncate(),
+                    tipo: excel.tables[table].rows[i][1].toString(),
+                    categoria: excel.tables[table].rows[i][2].toString(),
+                    precio: double.parse(excel.tables[table].rows[i][3].toString()).roundToDouble(),
+                    cantidad: double.parse(excel.tables[table].rows[i][4].toString()).roundToDouble(),
+                    isoferta: int.parse(excel.tables[table].rows[i][5].toString()).truncate(),
+                    descripcion: excel.tables[table].rows[i][6].toString(),
+                    activo: int.parse(excel.tables[table].rows[i][7].toString()).truncate(),
                     urlimagen: "",
+                    create_at: DateTime.now().toIso8601String(),
+                    upload_at: "",
                     idempresa: empresaProvider
                   );
                   listaProducto.add(productModel);
@@ -124,5 +146,14 @@ class _UploadProductExcelState extends State<UploadProductExcel> {
         })
         :Container(),
     );
+  }
+
+  Row conceptos(String titulo,String concepto) {
+    return Row(
+            children: <Widget>[
+              Text(titulo),
+              Expanded(child: Text(concepto,textAlign: TextAlign.end,))
+            ],
+          );
   }
 }
