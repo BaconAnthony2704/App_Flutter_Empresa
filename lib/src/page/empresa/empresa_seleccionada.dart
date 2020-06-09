@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/providers/tema_provider.dart';
 import 'package:provider/provider.dart';
-import 'dart:math' as m;
 class EmpresaSelected extends StatelessWidget {
   String nombre,nit,giro,telefono,email,direccion,idempresa;
+  String departamento,municipio,urlImagen;
   int domicilio;
-  EmpresaSelected({this.nombre="Empresa",
-  this.nit="-",this.telefono="-",this.direccion="-",this.idempresa="-",
+  EmpresaSelected({this.nombre="Empresa",this.departamento="-",this.municipio="-",
+  this.nit="-",this.telefono="-",this.direccion="-",this.idempresa="-",this.urlImagen,
   this.email="-",this.giro="-",this.domicilio=0});
   @override
   Widget build(BuildContext context) {
@@ -50,15 +50,18 @@ class EmpresaSelected extends StatelessWidget {
             style: TextStyle(fontSize: size.height*.05,),)
           ),
         ),
-        (this.domicilio==1)?
+        
         Positioned(
           bottom: 0,
           right: 0,
           child: ClipRRect(
-            borderRadius: BorderRadius.only(bottomRight: Radius.circular(50.0)),
-            child: Icon(Icons.motorcycle,size: size.height*.2,color: Theme.of(context).textTheme.headline6.color.withOpacity(0.5),)),
+            borderRadius: BorderRadius.only(bottomRight: Radius.circular(50.0),topLeft: Radius.circular(50.0)),
+            child:FadeInImage(placeholder: AssetImage('assets/img/logo_placeholder.png'), 
+            image:(urlImagen!=null)?NetworkImage(urlImagen):AssetImage('assets/img/logo_placeholder.png'),
+            height: 150,
+            )
+          ) ,
         )
-        :Container()
       ],
     );
   }
@@ -68,7 +71,7 @@ class EmpresaSelected extends StatelessWidget {
    return SingleChildScrollView(
      child: Column(
        children: <Widget>[
-         SafeArea(child: Container(height: 200.0,)),
+         SafeArea(child: Container(height: 225.0,)),
          Container(
             width: size.width*.85,
             padding: EdgeInsets.symmetric(vertical: 50.0),
@@ -95,7 +98,20 @@ class EmpresaSelected extends StatelessWidget {
                 TableRow(children: [Divider(),Divider()]),
                 Environment().generarFila("Email", "${this.email}"),
                 TableRow(children: [Divider(),Divider()]),
-                Environment().generarFila("Direccion", "${this.direccion}")
+                Environment().generarFila("Direccion", "${this.direccion}"),
+                TableRow(children: [Divider(),Divider()]),
+                Environment().generarFila("Departamento", "${this.departamento}"),
+                TableRow(children: [Divider(),Divider()]),
+                Environment().generarFila("Municipio", "${this.municipio}"),
+                TableRow(children: [Divider(),Divider()]),
+                (this.domicilio==1)
+                ?TableRow(
+                  children: [
+                    Text("Domicilio"),
+                    Icon(Icons.motorcycle)
+                  ]
+                )
+                :Environment().generarFila("Domicilio", "No")
               ],
             ),
         )

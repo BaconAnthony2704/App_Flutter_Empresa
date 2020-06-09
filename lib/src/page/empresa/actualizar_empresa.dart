@@ -29,6 +29,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   Position _currentPosition;
   TextEditingController textNombre,txtNit,txtTelefono,txtEmail,txtDireccion,txtGiro,txtDepartamento,txtMunicipio;
   File foto;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -77,8 +78,8 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       txtEmail.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.email)).value;
       txtEmail.selection=TextSelection.fromPosition(TextPosition(offset: txtEmail.text.length));
       /*Descripcion */
-      txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.direccion)).value;
-      txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
+      // txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.direccion)).value;
+      // txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
       /*Departamento */
       // txtDepartamento.value=new TextEditingController.fromValue(new TextEditingValue(text: depaSel)).value;
       // txtDepartamento.selection=TextSelection.fromPosition(TextPosition(offset: txtDepartamento.text.length));
@@ -107,7 +108,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               Row(
                 children: <Widget>[
                   Expanded(
-                    child:crearLogo() 
+                    child:crearLogo(empresaModel: empresa) 
                   ),
                   Container(
                       width: MediaQuery.of(context).size.width*.40,
@@ -146,7 +147,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 ),
                 
                 Divider(),
-                _crearBoton(context,empresaProvider,idempresa,bloc)
+                _crearBoton(context,empresaProvider,idempresa,bloc,empresa)
             ],
           ),
         ),
@@ -155,22 +156,39 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       
   }
 
-  Widget crearLogo() {
-    if(foto!=null){
+  Widget crearLogo({EmpresaModel empresaModel=null}) {
+    if(empresaModel!=null){
       return Container(
         height: 180,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.0)
-        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20.0),
-          child: Image.file(
-            foto,
+          child: FadeInImage(
+            placeholder: AssetImage('assets/img/silver_balls.gif'), 
+            image: (empresaModel.url_imagen!=null)
+            ?NetworkImage(empresaModel.url_imagen)
+            :AssetImage('assets/img/logo_placeholder.png'),
             fit: BoxFit.cover,
           ),
         ),
       );
+    }else{
+      if(foto!=null){
+        return Container(
+          height: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.0)
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20.0),
+            child: Image.file(
+              foto,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }
     }
+    
     return Container(
       height: 180,
       decoration: BoxDecoration(
@@ -351,6 +369,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           onPressed: ()async{
             
             try{
+              txtDireccion.clear();
               _currentPosition= await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
               List<Placemark> p=await geolocator.placemarkFromCoordinates(
                 _currentPosition.latitude,_currentPosition.longitude);
@@ -370,9 +389,16 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       ),
       onChanged: (valor){
         setState(() {
-          direccion=_currentPosition.latitude.toString();
-          direccion+=txtDireccion.text;
-         direccion=valor;
+        //   txtDireccion.clear();
+        //   direccion=_currentPosition.latitude.toString();
+        //   direccion+=txtDireccion.text;
+        //  direccion=valor;
+
+        // descripcion=txtDescripcion.text;
+        // descripcion=valor;
+
+        direccion=txtDireccion.text;
+        direccion=valor;
          print(direccion);
         });
       },
@@ -405,52 +431,111 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   }
 
   Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
-   int idempresa, ValidaBloc bloc) {
-    return StreamBuilder<bool>(
-      stream: bloc.formValidStream,
-      builder: (context,snapshot){
-        return RaisedButton(
-          color: Theme.of(context).textSelectionColor,
-          splashColor: Theme.of(context).primaryColor,
-          textColor: Colors.white,
-          child: Text("Actualizar"),
-          hoverColor: Colors.green.withOpacity(0.8),
+   int idempresa, ValidaBloc bloc, EmpresaModel empresa) {
+     String btn;
+     String urlImagen;
+     if(empresa==null){
+       btn="Ingresar";
+       if(foto==null){
+         urlImagen="";
+       }
+       return StreamBuilder<bool>(
+        stream: bloc.formValidStream,
+        builder: (context,snapshot){
+          return RaisedButton(
+            color: Theme.of(context).textSelectionColor,
+            splashColor: Theme.of(context).primaryColor,
+            textColor: Colors.white,
+            child: Text(btn),
+            hoverColor: Colors.green.withOpacity(0.8),
 
-          onPressed: (snapshot.hasData)
-          ?()async{
-            // EmpresaModel empresaModel=new EmpresaModel(
-            //   idempresa: idempresa,
-            //   activo: 1,
-            //   nombre: (this.nombre.isEmpty)?textNombre.text:this.nombre,
-            //   nit: (this.nit.isEmpty)?txtNit.text:this.nit,
-            //   telefono: (this.telefono.isEmpty)?txtTelefono.text:this.telefono,
-            //   direccion: (this.direccion.isEmpty)?txtDireccion.text:this.direccion,
-            //   email:(this.email.isEmpty)?txtEmail.text:this.email,
-            //   giro: (this.giro.isEmpty)?txtGiro.text:this.giro,
-            //   isdomicilio: Environment().parseEntero(this.isdelivery),
-            // );
-            // int valor=await empresaProvider.
-            // actualizarEmpresa(empresaModel);
-            // print(valor);
+            onPressed: (snapshot.hasData)
+            ?()async{
+              EmpresaModel empresaModel=new EmpresaModel(
+                activo: 1,
+                nombre: bloc.nombreEmpresa,
+                nit: bloc.nit,
+                telefono: bloc.telefono,
+                direccion: this.direccion,
+                email:bloc.email,
+                giro: this.txtGiro.text,
+                create_at: DateTime.now().toIso8601String(),
+                departamento: this.departamento,
+                municipio: this.municipio,
+                url_imagen: await empresaProvider.subirImagen(foto),
+                upload_at: "",
+                isdomicilio: Environment().parseEntero(this.isdelivery),
+              );
+              int valor=await empresaProvider.
+              ingresarEmpresa(empresaModel);
+              Navigator.pop(context);
 
-            // Navigator.pop(context);
+              // print(bloc.nombreEmpresa);
+              // print(bloc.email);
+              // print(bloc.nit);
+              // print(bloc.telefono);
+              // print(this.direccion);
+              // print(this.departamento);
+              // print(this.municipio);
+              // print(this.txtGiro.text);
 
-            // print(bloc.nombreEmpresa);
-            // print(bloc.email);
-            // print(bloc.nit);
-            // print(bloc.telefono);
-            // print(this.direccion);
-            // print(this.departamento);
-            // print(this.municipio);
-            // print(this.txtGiro.text);
-
-            //String urlImagen=await empresaProvider.subirImagen(foto);
-            //print(urlImagen);
+              //String urlImagen=await empresaProvider.subirImagen(foto);
+              //print(urlImagen);
+          }
+          :null,
+          );
         }
-        :null,
-        );
-      }
-    );
+      );
+     }else{
+       btn="Actualizar";
+       
+          return RaisedButton(
+            color: Theme.of(context).textSelectionColor,
+            splashColor: Theme.of(context).primaryColor,
+            textColor: Colors.white,
+            child: Text(btn),
+            hoverColor: Colors.green.withOpacity(0.8),
+            onPressed: 
+            ()async{
+              EmpresaModel empresaModel=new EmpresaModel(
+                idempresa: idempresa,
+                activo: 1,
+                nombre: bloc.nombreEmpresa,
+                nit: bloc.nit,
+                telefono: bloc.telefono,
+                direccion: this.direccion,
+                email:bloc.email,
+                giro: this.txtGiro.text,
+                create_at: "",
+                departamento: this.departamento,
+                municipio: this.municipio,
+                url_imagen: (foto==null)
+                ?empresa.url_imagen
+                :await empresaProvider.subirImagen(foto),
+                upload_at: DateTime.now().toIso8601String(),
+                isdomicilio: Environment().parseEntero(this.isdelivery),
+              );
+              int valor=await empresaProvider.
+              actualizarEmpresa(empresaModel);
+              Navigator.pop(context);
+
+              // print(bloc.nombreEmpresa);
+              // print(bloc.email);
+              // print(bloc.nit);
+              // print(bloc.telefono);
+              // print(this.direccion);
+              // print(this.departamento);
+              // print(this.municipio);
+              // print(this.txtGiro.text);
+
+              //String urlImagen=await empresaProvider.subirImagen(foto);
+              //print(urlImagen);
+          }
+          
+          );
+        
+     }
+    
   }
   Widget _crearDepartamento(DepartamentoProvider departamentoProvider) {
     return FutureBuilder<List<DepartamentoModel>>(
@@ -554,9 +639,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
 
   _procesarImagen(ImageSource origen)async{
     foto=await ImagePicker.pickImage(source: origen,imageQuality: 75,maxHeight: 300,maxWidth: 300);
-    if(foto!=null){
-
-    }
+    
     setState(() {
       
     });

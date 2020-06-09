@@ -69,6 +69,9 @@ class MiEmpresaPage extends StatelessWidget {
             email: snapshot.data.email,
             giro: snapshot.data.giro,
             nit: snapshot.data.nit,
+            departamento: snapshot.data.departamento,
+            municipio: snapshot.data.municipio,
+            urlImagen: snapshot.data.url_imagen,
             telefono: snapshot.data.telefono,);
 
         },
