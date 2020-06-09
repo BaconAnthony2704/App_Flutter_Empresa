@@ -15,7 +15,7 @@ class EditProduct extends StatefulWidget {
 }
 
 class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClientMixin{
-  String nombre="",detalle="",descripcion="";
+  String nombre="",detalle="",descripcion="",tipo;
 
   double precio=0.0, existencia=0.0;
   List<String> listaTipo=["Computadora","Rayado","Azul"];
@@ -50,6 +50,12 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
       txtPrecio.value=new TextEditingController.fromValue(new TextEditingValue(text: productoEdit.precio.toString())).value;
       txtPrecio.selection=TextSelection.fromPosition(TextPosition(offset: txtPrecio.text.length));
 
+      txtCantidad.value=new TextEditingController.fromValue(new TextEditingValue(text: productoEdit.cantidad.toString())).value;
+      txtCantidad.selection=TextSelection.fromPosition(TextPosition(offset: txtCantidad.text.length));
+
+      txtTipo.value=new TextEditingController.fromValue(new TextEditingValue(text: productoEdit.tipo.toString())).value;
+      txtTipo.selection=TextSelection.fromPosition(TextPosition(offset: txtTipo.text.length));
+       
     }
     return Scaffold(
       appBar: AppBar(
@@ -112,7 +118,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
       onChanged: (valor){
         nombre=txtNombre.text;
         nombre=valor;
-        print(valor);
+        print(nombre);
       },
       controller: txtNombre,
     );
@@ -151,6 +157,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
           suffixIcon: Icon(Icons.monetization_on)
         ),
         maxLength: 7,
+        autofocus: false,
         onChanged: (valor){
           precio=double.parse(txtPrecio.text);
           precio=double.parse(valor);
@@ -173,9 +180,10 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
           suffix: Text("Unidad(es)")
         ),
         maxLength: 7,
+        autofocus: false,
         onChanged: (valor){
-          cantidad=double.parse(txtCantidad.text);
-          cantidad=double.parse(valor);
+          existencia=double.parse(txtCantidad.text);
+          existencia=double.parse(valor);
         },
         controller: txtCantidad,
       ),
@@ -227,7 +235,11 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                 idempresa: idempresa,
                 isoferta: Environment().parseEntero(this.favorito),
                 nombre: this.nombre,
+                cantidad: existencia,
                 precio: this.precio,
+                categoria: txtCategoria.text,
+                tipo: txtTipo.text,
+                create_at: DateTime.now().toIso8601String(),
                 urlimagen: ""
               );
               if(productoEdit==null){
@@ -237,6 +249,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
               }else{
                 //Actualizar
                 productoModel.idproducto=productoEdit.idproducto;
+                productoModel.upload_at=DateTime.now().toIso8601String();
                 productoProvider.actualizarProducto(productoModel);
                 Navigator.of(context).pop();
                 BotToast.showText(text: "Producto actualizado con exito");
@@ -265,6 +278,9 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                 isoferta: Environment().parseEntero(this.favorito),
                 nombre: this.nombre,
                 precio: this.precio,
+                tipo: txtTipo.text,
+                cantidad: double.parse(txtCantidad.text),
+                create_at: DateTime.now().toIso8601String(),
                 urlimagen: fotoUrl
               );
               if(productoEdit==null){
@@ -281,6 +297,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
               }else{
                 //Actualizar
                 productoModel.idproducto=productoEdit.idproducto;
+                productoModel.upload_at=DateTime.now().toIso8601String();
                 productoProvider.actualizarProducto(productoModel);
                 return AlertDialog(
                   content: Text("Producto actualizado correctamente "),
@@ -356,6 +373,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
 
   Widget _crearTipo() {
     return TextField(
+      autofocus: false,
       enableInteractiveSelection: false,
       decoration: InputDecoration(
         border: OutlineInputBorder(
@@ -376,8 +394,16 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                   contentPadding: EdgeInsets.zero,
                   title: Text("${listaTipo[index]}"),
                   onTap: (){
+                    txtTipo=new TextEditingController();
+                    tipo=txtTipo.text;
+                    txtTipo.text="";
+                    tipo=listaTipo[index];
                     txtTipo.text=listaTipo[index];
+                    setState(() {
+                      
+                    });
                     Navigator.of(context).pop();
+                    
                   },
                 );
               },
