@@ -26,7 +26,7 @@ class DBProvider{
   List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio","activo","departamento","municipio","create_at","upload_at","url_imagen"];
   List<String> columna_usuario=["idusuario","nombre","email","password","idrol","idempresa","activo","docreate","doread","doupdate","dodelete"];
   List<String> columna_rol=["idrol","accion","activo"];
-  List<String> columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa","descripcion","activo"];
+  List<String> columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa","descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"];
   List<String> columna_existencia=["idexistencia","idproducto","idempresa","cantidad","activo"];
 
   DBProvider._();
@@ -104,7 +104,12 @@ class DBProvider{
           ${columna_producto[4]} INTEGER,
           ${columna_producto[5]} INTEGER,
           ${columna_producto[6]} TEXT,
-          ${columna_producto[7]} INTEGER
+          ${columna_producto[7]} INTEGER,
+          ${columna_producto[8]} TEXT,
+          ${columna_producto[9]} TEXT,
+          ${columna_producto[10]} REAL,
+          ${columna_producto[11]} TEXT,
+          ${columna_producto[12]} TEXT
           )
          ''');
          print("Tabla producto creada");
