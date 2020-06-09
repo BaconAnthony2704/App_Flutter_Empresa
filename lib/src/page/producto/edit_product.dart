@@ -18,13 +18,18 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
   String nombre="",detalle="",descripcion="";
 
   double precio=0.0, existencia=0.0;
-
+  List<String> listaTipo=["Computadora","Rayado","Azul"];
+  List<String>listaCategoria=["Escolar","Tecnologia","Materia prima","Utensilios"];
   bool favorito=false,oferta=false;
   File foto;
   String tituloInterfaz;
+  double cantidad;
   TextEditingController txtNombre=new TextEditingController();
   TextEditingController txtDescripcion=new TextEditingController();
   TextEditingController txtPrecio=new TextEditingController();
+  TextEditingController txtTipo=new TextEditingController();
+  TextEditingController txtCategoria=new TextEditingController();
+  TextEditingController txtCantidad=new TextEditingController();
   @override
   Widget build(BuildContext context) {
     ProductoProvider productoProvider=
@@ -70,9 +75,19 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
             Divider(),
             Row(
               children: <Widget>[
+                Expanded(
+                  child: _crearTipo(),
+                ),
+                Expanded(
+                  child: _crearCategoria()
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              children: <Widget>[
                 _crearPrecio(),
-                SizedBox(width: MediaQuery.of(context).size.width*.1,),
-               _crearOferta(),
+               _crearCantidad()
               ],
             ),
             Divider(),
@@ -141,6 +156,28 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
           precio=double.parse(valor);
         },
         controller: txtPrecio,
+      ),
+    );
+  }
+
+  Widget _crearCantidad() {
+    return Expanded(
+      child: TextField(
+        keyboardType: TextInputType.numberWithOptions(signed: true,decimal: true),
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0)
+          ),
+          hintText: "Cantidad",
+          labelText: "Cantidad",
+          suffix: Text("Unidad(es)")
+        ),
+        maxLength: 7,
+        onChanged: (valor){
+          cantidad=double.parse(txtCantidad.text);
+          cantidad=double.parse(valor);
+        },
+        controller: txtCantidad,
       ),
     );
   }
@@ -316,4 +353,76 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
   @override
   // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
+
+  Widget _crearTipo() {
+    return TextField(
+      enableInteractiveSelection: false,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        hintText: "Tipo",
+        labelText: "Tipo"
+      ),
+      onTap: ()async{
+        FocusScope.of(context).requestFocus(new FocusNode());
+        await showDialog(context: context,
+        builder: (context)=>AlertDialog(
+          content: Container(
+            height: MediaQuery.of(context).size.height*.3,
+            child: ListView.builder(
+              itemBuilder: (context,index){
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text("${listaTipo[index]}"),
+                  onTap: (){
+                    txtTipo.text=listaTipo[index];
+                    Navigator.of(context).pop();
+                  },
+                );
+              },
+              itemCount: listaTipo.length,
+            ),
+          ),
+        ));
+      },
+      controller: txtTipo,
+    );
+  }
+
+  Widget _crearCategoria() {
+    return TextField(
+      enableInteractiveSelection: false,
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        hintText: "Categoria",
+        labelText: "Categoria"
+      ),
+      onTap: ()async{
+        FocusScope.of(context).requestFocus(new FocusNode());
+        await showDialog(context: context,
+        builder: (context)=>AlertDialog(
+          content: Container(
+            height: MediaQuery.of(context).size.height*.3,
+            child: ListView.builder(
+              itemBuilder: (context,index){
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text("${listaCategoria[index]}"),
+                  onTap: (){
+                    txtCategoria.text=listaCategoria[index];
+                    Navigator.of(context).pop();
+                  },
+                );
+              },
+              itemCount: listaCategoria.length,
+            ),
+          ),
+        ));
+      },
+      controller: txtCategoria,
+    );
+  }
 }
