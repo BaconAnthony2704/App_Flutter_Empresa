@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/departamento_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/municipio_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
+import 'package:mantenimiento_empresa/src/providers/valida_bloc.dart';
 import 'package:mantenimiento_empresa/src/service/departamento_service.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,6 +28,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   int index,idempresa;
   Position _currentPosition;
   TextEditingController textNombre,txtNit,txtTelefono,txtEmail,txtDireccion,txtGiro,txtDepartamento,txtMunicipio;
+  File foto;
   @override
   void initState() {
     // TODO: implement initState
@@ -54,6 +59,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
     EmpresaModel empresa=ModalRoute.of(context).settings.arguments;
     Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+    ValidaBloc bloc=Provider.of<ValidaBloc>(context);
     if(empresa==null){
       interfaz="Nueva Empresa";
     }else{
@@ -86,11 +92,11 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         appBar: AppBar(
           title: Text(interfaz),
           actions: <Widget>[
-            IconButton(icon: Icon(FontAwesomeIcons.camera), onPressed: (){
-
+            IconButton(icon: Icon(FontAwesomeIcons.camera), onPressed: ()async{
+              await _tomarFoto();
             }),
-            IconButton(icon: Icon(FontAwesomeIcons.fileImage), onPressed: (){
-              
+            IconButton(icon: Icon(FontAwesomeIcons.fileImage), onPressed: ()async{
+              await _seleccionarFoto();
             })
           ],
         ),
@@ -101,17 +107,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               Row(
                 children: <Widget>[
                   Expanded(
-                    child:Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20.0)
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.0),
-                        child: Image(image: AssetImage('assets/img/logo_placeholder.png'),
-                        fit: BoxFit.cover,),
-                      ),
-                    ) 
+                    child:crearLogo() 
                   ),
                   Container(
                       width: MediaQuery.of(context).size.width*.40,
@@ -120,22 +116,22 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 ],
               ),
               Divider(),
-              _crearNombre(),
+              _crearNombre(bloc),
               Divider(),
-                _crearNit(),
+                _crearNit(bloc),
                 Divider(),
                 Table(
                   children: [
                     TableRow(
                       children: [
-                        _crearTelefono(),
+                        _crearTelefono(bloc),
                         _crearGiro(giro)
                       ]
                     )
                   ],
                 ),
                 Divider(),
-                _crearEmail(),
+                _crearEmail(bloc),
                 
                 Divider(),
                 _crearDireccion(geolocator),
@@ -150,7 +146,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 ),
                 
                 Divider(),
-                _crearBoton(context,empresaProvider,idempresa)
+                _crearBoton(context,empresaProvider,idempresa,bloc)
             ],
           ),
         ),
@@ -158,105 +154,135 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       );
       
   }
-  Widget _crearNombre() {
-    return TextFormField(
-      autofocus: false,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        hintText: "Nombre de la empresa",
-        labelText: "Empresa",
-        suffixIcon: IconButton(onPressed: (){
-          setState(() {
-            textNombre.text="";
-          });
-        }, icon: Icon(Icons.clear)),
-        
-      ),
-      onChanged: (valor){
-        nombre=textNombre.text;
-        nombre=valor;
 
-        setState(() {
-        });
+  Widget crearLogo() {
+    if(foto!=null){
+      return Container(
+        height: 180,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.0)
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.0),
+          child: Image.file(
+            foto,
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20.0)
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20.0),
+        child: Image(image: AssetImage('assets/img/logo_placeholder.png'),
+        fit: BoxFit.cover,),
+      ),
+    );
+  }
+  Widget _crearNombre(ValidaBloc bloc) {
+    return StreamBuilder<String>(
+      stream: bloc.nombreEmpresaStream,
+      builder: (context,snapshot){
+        return TextFormField(
+          autofocus: false,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Nombre de la empresa",
+            labelText: "Empresa",
+            errorText: snapshot.error,
+            suffixIcon: IconButton(onPressed: (){
+              setState(() {
+                textNombre.text="";
+              });
+            }, icon: Icon(Icons.clear)),
+            
+          ),
+          onChanged: bloc.changeNombreEmpresa,
+          initialValue: textNombre.text,
+        );
       },
-      initialValue: textNombre.text,
     );
   }
 
-  Widget _crearNit() {
-    return TextFormField(
-      autofocus: false,
-      keyboardType: TextInputType.number,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        hintText: "NIT",
-        labelText: "NIT",
-        
-      ),
-      initialValue: txtNit.text,
-      maxLength: 17,
-      onChanged: (valor){
-        nit=txtNit.text;
-        nit=valor;
-        setState(() {
-        });
-      },
+  Widget _crearNit(ValidaBloc bloc) {
+    return StreamBuilder<String>(
+      stream: bloc.nitStream,
+      builder: (context,snapshot){
+        return TextFormField(
+          autofocus: false,
+          keyboardType: TextInputType.number,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "NIT",
+            labelText: "NIT",
+            errorText: snapshot.error,
+          ),
+          initialValue: txtNit.text,
+          
+          maxLength: 17,
+          onChanged: bloc.changeNit,
+        );
+      }
     );
   }
 
-  Widget _crearTelefono() {
-    return TextFormField(
-      autofocus: false,
-      keyboardType: TextInputType.number,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        hintText: "Telefono",
-        labelText: "Telefono",
-        suffixIcon: Icon(Icons.phone),
-        
-      ),
-      initialValue: txtTelefono.text,
-      maxLength: 9,
-      onChanged: (valor){
-        setState(() {
-          telefono=txtTelefono.text;
-          telefono=valor;
-        });
-      },
+  Widget _crearTelefono(ValidaBloc bloc) {
+    return StreamBuilder<String>(
+      stream: bloc.telefonoStream,
+      builder: (context,snapshot){
+        return TextFormField(
+          autofocus: false,
+          keyboardType: TextInputType.number,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Telefono",
+            labelText: "Telefono",
+            prefix: Text("+503 "),
+            errorText: snapshot.error,
+          ),
+          initialValue: txtTelefono.text,
+          maxLength: 8,
+          onChanged: bloc.changeTelefono,
+        );
+      }
     );
   }
-  Widget _crearEmail() {
-    return TextFormField(
-      autofocus: false,
-      keyboardType: TextInputType.emailAddress,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        hintText: "Email",
-        labelText: "Email",
-        suffixIcon: Icon(Icons.alternate_email),
-        
-      ),
-      
-      maxLength: 25,
-      onChanged: (valor){
-        setState(() {
-          email=txtEmail.text;
-          email=valor;
-        });
+  Widget _crearEmail(ValidaBloc bloc) {
+    return StreamBuilder<String>(
+      stream: bloc.emailStream,
+      builder:(context,snapshot){
+        return TextFormField(
+          autofocus: false,
+          keyboardType: TextInputType.emailAddress,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Email",
+            labelText: "Email",
+            suffixIcon: Icon(Icons.alternate_email),
+            errorText: snapshot.error
+          ),
+          
+          maxLength: 25,
+          onChanged: bloc.changeEmail,
+          initialValue: txtEmail.text,
+        );
       },
-      initialValue: txtEmail.text,
     );
   }
 
@@ -378,40 +404,54 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     );
   }
 
-  Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider, int idempresa) {
-    return OutlineButton(
-      splashColor: Theme.of(context).primaryColor,
-      child: Text("Actualizar"),
-      hoverColor: Colors.green.withOpacity(0.8),
+  Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
+   int idempresa, ValidaBloc bloc) {
+    return StreamBuilder<bool>(
+      stream: bloc.formValidStream,
+      builder: (context,snapshot){
+        return RaisedButton(
+          color: Theme.of(context).textSelectionColor,
+          splashColor: Theme.of(context).primaryColor,
+          textColor: Colors.white,
+          child: Text("Actualizar"),
+          hoverColor: Colors.green.withOpacity(0.8),
 
-      onPressed: ()async{
-        EmpresaModel empresaModel=new EmpresaModel(
-          idempresa: idempresa,
-          activo: 1,
-          nombre: (this.nombre.isEmpty)?textNombre.text:this.nombre,
-          nit: (this.nit.isEmpty)?txtNit.text:this.nit,
-          telefono: (this.telefono.isEmpty)?txtTelefono.text:this.telefono,
-          direccion: (this.direccion.isEmpty)?txtDireccion.text:this.direccion,
-          email:(this.email.isEmpty)?txtEmail.text:this.email,
-          giro: (this.giro.isEmpty)?txtGiro.text:this.giro,
-          isdomicilio: Environment().parseEntero(this.isdelivery),
+          onPressed: (snapshot.hasData)
+          ?()async{
+            // EmpresaModel empresaModel=new EmpresaModel(
+            //   idempresa: idempresa,
+            //   activo: 1,
+            //   nombre: (this.nombre.isEmpty)?textNombre.text:this.nombre,
+            //   nit: (this.nit.isEmpty)?txtNit.text:this.nit,
+            //   telefono: (this.telefono.isEmpty)?txtTelefono.text:this.telefono,
+            //   direccion: (this.direccion.isEmpty)?txtDireccion.text:this.direccion,
+            //   email:(this.email.isEmpty)?txtEmail.text:this.email,
+            //   giro: (this.giro.isEmpty)?txtGiro.text:this.giro,
+            //   isdomicilio: Environment().parseEntero(this.isdelivery),
+            // );
+            // int valor=await empresaProvider.
+            // actualizarEmpresa(empresaModel);
+            // print(valor);
+
+            // Navigator.pop(context);
+
+            // print(bloc.nombreEmpresa);
+            // print(bloc.email);
+            // print(bloc.nit);
+            // print(bloc.telefono);
+            // print(this.direccion);
+            // print(this.departamento);
+            // print(this.municipio);
+            // print(this.txtGiro.text);
+
+            //String urlImagen=await empresaProvider.subirImagen(foto);
+            //print(urlImagen);
+        }
+        :null,
         );
-        int valor=await empresaProvider.
-        actualizarEmpresa(empresaModel);
-        print(valor);
-
-        Navigator.pop(context);
-    });
+      }
+    );
   }
-  TableRow tableRow(String titulo,String descripcion) {
-    return TableRow(
-        children: [
-          Text(titulo),
-          Text("${descripcion}")
-        ]
-      );
-  }
-
   Widget _crearDepartamento(DepartamentoProvider departamentoProvider) {
     return FutureBuilder<List<DepartamentoModel>>(
       future: departamentoProvider.getCargarDepartamentos(),
@@ -504,6 +544,24 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       );
       
   }
+
+  void _seleccionarFoto()async{
+    await _procesarImagen(ImageSource.gallery);
+  }
+  void _tomarFoto()async{
+    await _procesarImagen(ImageSource.camera);
+  }
+
+  _procesarImagen(ImageSource origen)async{
+    foto=await ImagePicker.pickImage(source: origen,imageQuality: 75,maxHeight: 300,maxWidth: 300);
+    if(foto!=null){
+
+    }
+    setState(() {
+      
+    });
+  }
+  
 
   
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/page/empresa/actualizar_empresa.dart';
 import 'package:mantenimiento_empresa/src/page/empresa/crear_empresa.dart';
-import 'package:mantenimiento_empresa/src/page/empresa/home_empresa.dart';
 import 'package:mantenimiento_empresa/src/page/empresa/mi_empresa.dart';
 import 'package:mantenimiento_empresa/src/page/home_page.dart';
 import 'package:mantenimiento_empresa/src/page/login_page.dart';
@@ -17,7 +16,7 @@ Map<String, WidgetBuilder> getApplicationRoutes() {
     return {
       '/':(BuildContext context)=>HomePage(),
       /*Empresa */
-      'inicio_empresa':(BuildContext context)=>HomeEmpresa(),
+      
       'edit_empresa':(BuildContext context)=>EditCompany(),
       'actualizar_empresa':(BuildContext context)=>ActualizarEmpresa(),
 
