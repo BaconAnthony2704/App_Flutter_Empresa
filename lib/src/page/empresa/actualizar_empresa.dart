@@ -1,15 +1,19 @@
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/models/codigo_postal.dart';
 import 'package:mantenimiento_empresa/src/models/departamento_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/municipio_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
+import 'package:mantenimiento_empresa/src/providers/usuario_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/valida_bloc.dart';
 import 'package:mantenimiento_empresa/src/service/departamento_service.dart';
+import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -21,13 +25,15 @@ class ActualizarEmpresa extends StatefulWidget {
 class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   //["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio","activo"];
   String nombre,nit,telefono,email,direccion,giro,departamento,municipio;
+  String cp;
   String opcionSel,depaSel,muniSel;
   List<String> giros;
   bool isFavorite=false,isdelivery=false,isdomicilio;
   String interfaz="Actualizar Empresa";
   int index,idempresa;
   Position _currentPosition;
-  TextEditingController textNombre,txtNit,txtTelefono,txtEmail,txtDireccion,txtGiro,txtDepartamento,txtMunicipio;
+  List<CodigoPostal> codigoPostal=new CodigoPostal().obtenerListaCodigoPostal();
+  TextEditingController txtCodigoPostal, textNombre,txtNit,txtTelefono,txtEmail,txtDireccion,txtGiro,txtDepartamento,txtMunicipio;
   File foto;
 
   @override
@@ -44,6 +50,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     muniSel="San Salvador SS";
     opcionSel="Seleccione";
     giros=["Seleccione","Comida","Servicios","Fabricacion","Construccion","Fab de Camisas","Tecnologia","Electronica"];
+    //codigoPostal=[new CodigoPostal(idCodigo: 1,codigoPostal: "+503",pais: "El Salvador"),];
     textNombre=new TextEditingController();
     txtNit=new TextEditingController();
     txtTelefono=new TextEditingController();
@@ -52,12 +59,14 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     txtGiro=new TextEditingController();
     txtDepartamento=new TextEditingController();
     txtMunicipio=new TextEditingController();
+    txtCodigoPostal=new TextEditingController();
     isdomicilio=false;
   }
   @override
   Widget build(BuildContext context) {
     DepartamentoProvider departamentoProvider=Provider.of<DepartamentoProvider>(context);
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
+    UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
     EmpresaModel empresa=ModalRoute.of(context).settings.arguments;
     Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
     ValidaBloc bloc=Provider.of<ValidaBloc>(context);
@@ -121,16 +130,16 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               Divider(),
                 _crearNit(bloc),
                 Divider(),
-                Table(
-                  children: [
-                    TableRow(
-                      children: [
-                        _crearTelefono(bloc),
-                        _crearGiro(giro)
-                      ]
-                    )
+                Row(
+                  children: <Widget>[
+                    Container(
+                      width: MediaQuery.of(context).size.width*.2,
+                      child: _crearCodigoPostal()
+                    ),
+                    Expanded(child: _crearTelefono(bloc)),
                   ],
                 ),
+                _crearGiro(giro),
                 Divider(),
                 _crearEmail(bloc),
                 
@@ -147,7 +156,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 ),
                 
                 Divider(),
-                _crearBoton(context,empresaProvider,idempresa,bloc,empresa)
+                _crearBoton(context,empresaProvider,idempresa,bloc,empresa,usuarioProvider)
             ],
           ),
         ),
@@ -268,14 +277,67 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             ),
             hintText: "Telefono",
             labelText: "Telefono",
-            prefix: Text("+503 "),
             errorText: snapshot.error,
           ),
           initialValue: txtTelefono.text,
-          maxLength: 8,
+          maxLength: 15,
           onChanged: bloc.changeTelefono,
         );
       }
+    );
+  }
+
+  Widget _crearCodigoPostal() {
+    return TextField(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20.0)
+        ),
+        labelText: "Postal",
+        hintText: "Postal",
+      ),
+      autofocus: false,
+      maxLength: 5,
+      onTap: ()async{
+        FocusScope.of(context).requestFocus(new FocusNode());
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context){
+            return AlertDialog(
+              content: Container(
+                height: MediaQuery.of(context).size.height*.25,
+                child: Column(
+                  children: <Widget>[
+                    Text("Seleccione el codigo postal"),
+                    Container(
+                      height: MediaQuery.of(context).size.height*.2,
+                      child: ListView.builder(
+                        itemBuilder: (context,index){
+                          return ListTile(
+                            leading: Icon(FontAwesomeIcons.city),
+                            title: Text(codigoPostal[index].codigoPostal),
+                            subtitle: Text(codigoPostal[index].pais),
+                            onTap: (){
+                              Navigator.of(context).pop();
+                              cp=codigoPostal[index].codigoPostal;
+                              txtCodigoPostal.text=codigoPostal[index].codigoPostal;
+                              setState(() {
+                              });
+                            },
+                          );
+                        },
+                        itemCount: codigoPostal.length,
+                        ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        );
+      },
+      controller: txtCodigoPostal,
     );
   }
   Widget _crearEmail(ValidaBloc bloc) {
@@ -431,7 +493,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   }
 
   Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
-   int idempresa, ValidaBloc bloc, EmpresaModel empresa) {
+   int idempresa, ValidaBloc bloc, EmpresaModel empresa,UsuarioProvider usuarioProvider) {
      String btn;
      String urlImagen;
      if(empresa==null){
@@ -451,11 +513,12 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
 
             onPressed: (snapshot.hasData)
             ?()async{
+              int valor;
               EmpresaModel empresaModel=new EmpresaModel(
                 activo: 1,
                 nombre: bloc.nombreEmpresa,
                 nit: bloc.nit,
-                telefono: bloc.telefono,
+                telefono: (txtCodigoPostal.text.isNotEmpty)?txtCodigoPostal.text+bloc.telefono:bloc.telefono,
                 direccion: this.direccion,
                 email:bloc.email,
                 giro: this.txtGiro.text,
@@ -466,8 +529,22 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 upload_at: "",
                 isdomicilio: Environment().parseEntero(this.isdelivery),
               );
-              int valor=await empresaProvider.
+              valor=await empresaProvider.
               ingresarEmpresa(empresaModel);
+              PreferenciasUsuario prefs=PreferenciasUsuario();
+              var usr=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
+              
+                usr.idempresa=valor;
+                int estado=await usuarioProvider.actualizarUsuarioEmpresa(prefs.idusuario, usr);
+                if(estado==1){
+                  BotToast.showText(text: "Actualizado");
+                  //usuarioProvider.notifyListeners();
+                  empresaProvider.obtenerEmpresaFi();
+                  empresaProvider.notifyListeners();
+                }else{
+                  BotToast.showText(text: "No se pudo actualizar");
+                }
+              
               Navigator.pop(context);
 
               // print(bloc.nombreEmpresa);
@@ -644,6 +721,8 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       
     });
   }
+
+  
   
 
   

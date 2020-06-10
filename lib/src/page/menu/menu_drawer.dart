@@ -74,16 +74,18 @@ class MenuLateral extends StatelessWidget {
                   funcion: ()=>Navigator.of(context).pushReplacementNamed('/')),
                   (snapshot.data.docreate==1 && snapshot.data.dodelete==1
                   && snapshot.data.doread==1 && snapshot.data.doupdate==1)?
-                  opcionMenuLateral(icono: Icons.settings,titulo:"Empresa",
+                  opcionMenuLateral(icono: Icons.business,titulo:"Empresa",
                   subtitulo:"Mantenimiento",funcion:()=>Navigator.of(context).pushNamed('miempresa'))
                   :Container(),
                   (snapshot.data.docreate==1 && snapshot.data.dodelete==1
                   && snapshot.data.doread==1 && snapshot.data.doupdate==1)
-                  ?opcionMenuLateral(icono: FontAwesomeIcons.userAlt,titulo: "Usuarios",
+                  ?opcionMenuLateral(icono: FontAwesomeIcons.userCog,titulo: "Usuarios",
                   subtitulo: "Mantenimiento",funcion: ()=>Navigator.of(context).pushNamed('usuario_home'))
                   :Container(),
                   opcionMenuLateral(icono:FontAwesomeIcons.productHunt,titulo: "Producto",
                   subtitulo: "Mantenimiento",funcion: ()=>Navigator.of(context).pushNamed('inicio_producto')),
+                  opcionMenuLateral(icono: FontAwesomeIcons.userCheck,titulo: "Clientes",
+                  subtitulo:"Mantenimiento",funcion: ()=>Navigator.of(context).pushNamed('cliente_home') ),
                   ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Switch(value: temaProvider.darkTheme, 
@@ -99,6 +101,7 @@ class MenuLateral extends StatelessWidget {
                   opcionMenuLateral(icono: Icons.exit_to_app,titulo: "Salir de sesion",
                   subtitulo: "Salir",funcion: (){
                     prefs.ultimaPagina='login';
+                    prefs.idusuario=0;
                     Navigator.of(context).pushReplacementNamed('login');
                   })
                 ],

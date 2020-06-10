@@ -22,11 +22,18 @@ class DBProvider{
   final String tabla_producto="producto";
   final String tabla_existencia="existencia";
 
-  //columnas
-  List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio","activo","departamento","municipio","create_at","upload_at","url_imagen"];
-  List<String> columna_usuario=["idusuario","nombre","email","password","idrol","idempresa","activo","docreate","doread","doupdate","dodelete"];
+  //Columnas
+  List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio",
+                                "activo","departamento","municipio","create_at","upload_at","url_imagen"];
+
+  List<String> columna_usuario=["idusuario","nombre","email","password","idrol","idempresa","activo",
+                                "docreate","doread","doupdate","dodelete"];
+
   List<String> columna_rol=["idrol","accion","activo"];
-  List<String> columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa","descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"];
+
+  List<String> columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa",
+                                  "descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"];
+
   List<String> columna_existencia=["idexistencia","idproducto","idempresa","cantidad","activo"];
 
   DBProvider._();
@@ -141,13 +148,13 @@ class DBProvider{
         await db.execute('''
          INSERT INTO ${tabla_usuario} 
          (nombre,email,password,idrol,idempresa,activo,docreate,doread,doupdate,dodelete) 
-         VALUES('root','usuario@root.com','diprocad1',1,1,1,1,1,1,1)
+         VALUES('root','usuario@root.com','diprocad1',1,0,1,1,1,1,1)
          ''');
          print("Consulta realizada No.3");
          await db.execute('''
          INSERT INTO ${tabla_usuario} 
          (nombre,email,password,idrol,idempresa,activo,docreate,doread,doupdate,dodelete) 
-         VALUES('superRoot','usuario2@root.com','diprocad2',1,1,1,1,1,1,1)
+         VALUES('superRoot','usuario2@root.com','diprocad2',1,0,1,1,1,1,1)
          ''');
          print("Consulta realizada No.4");
 
@@ -251,8 +258,6 @@ class DBProvider{
     final db=await database;
     final res=await db.query(tabla_usuario,where: "${columna_usuario[2]}=? AND ${columna_usuario[3]}=? AND ${columna_usuario[6]}=1",whereArgs: [email,password]);
     return res.isNotEmpty?UsuarioModel.fromJson(res.first):null;
-    
-
   }
 
   //Obtener UNA empresa
@@ -277,10 +282,21 @@ class DBProvider{
     e.${columna_empresa[12]},e.${columna_empresa[13]}        
     FROM ${tabla_empresa} AS e 
     INNER JOIN ${tabla_usuario} AS u 
-    ON u.${columna_usuario[0]}=$idusuario 
+    ON u.${columna_usuario[5]}=e.${columna_empresa[0]} AND u.${columna_usuario[0]}=$idusuario
     ''';
     final res=await db.rawQuery(query);
     return res.isNotEmpty?EmpresaModel.fromJson(res.first):null;
+  }
+
+  Future<bool> getEsAdministrador(int idusuario)async{
+    final db=await database;
+    final res=await db.query(tabla_usuario,where: "${columna_usuario[0]}=? AND ${columna_usuario[4]}=1",whereArgs: [idusuario]);
+    UsuarioModel usuarioModel=res.isNotEmpty?UsuarioModel.fromJson(res.first):null;
+    if(usuarioModel!=null){
+      return true;
+    }else{
+      return false;
+    }
   }
 
   //Actualizar empresa
@@ -305,6 +321,11 @@ class DBProvider{
       return resp;
     }
     return 0;
+  }
+  Future<int> updateUsuarioAdministrador(UsuarioModel usuarioModel)async{
+    final db=await database;
+    final res=await db.update(tabla_usuario, usuarioModel.toJson(),where: "${columna_usuario[0]}=?",whereArgs: [usuarioModel.idusuario]);
+    return res;
   }
   //Actualizar permisos de usuario
   Future<int> updatePermisoUsuario(UsuarioModel usuarioModel)async{

@@ -65,4 +65,15 @@ class UsuarioProvider with ChangeNotifier{
     notifyListeners();
     return afectado;
   }
+
+  Future<int> actualizarUsuarioEmpresa(int idusuario,UsuarioModel usuarioModel)async{
+    bool esAdministrador=await DBProvider.db.getEsAdministrador(idusuario);
+    if(esAdministrador){
+      await DBProvider.db.updateUsuarioAdministrador(usuarioModel);
+      notifyListeners();
+      return 1;
+    }else{
+      return 0;
+    }
+  }
 }

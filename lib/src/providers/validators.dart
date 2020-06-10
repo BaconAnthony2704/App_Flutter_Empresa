@@ -3,10 +3,10 @@ import 'dart:async';
 class Validators{
   final validaNombreEmpresa=StreamTransformer<String,String>.fromHandlers(
     handleData: (nombre,sink){
-      if(nombre.length>=15){
+      if(nombre.length>=1){
         sink.add(nombre);
       }else{
-        sink.addError('Mas de 15 caracteres');
+        sink.addError('Debe tener mas de 2 caracteres');
       }
     }
   );
