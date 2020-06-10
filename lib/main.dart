@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/login_bloc.dart';
 import 'package:mantenimiento_empresa/src/providers/product_provider.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (BuildContext context)=>DepartamentoProvider(),),
         ChangeNotifierProvider(create: (BuildContext context)=>ValidaBloc(),),
         ChangeNotifierProvider(create: (BuildContext context)=>LoginBloc(),),
+        ChangeNotifierProvider(create: (BuildContext context)=>ClienteProvider(),),
 
       ],
       child: MaterialApp(

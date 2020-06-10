@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
@@ -21,6 +22,7 @@ class DBProvider{
   final String tabla_rol="rol";
   final String tabla_producto="producto";
   final String tabla_existencia="existencia";
+  final String tabla_cliente="cliente";
 
   //Columnas
   List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio",
@@ -35,6 +37,9 @@ class DBProvider{
                                   "descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"];
 
   List<String> columna_existencia=["idexistencia","idproducto","idempresa","cantidad","activo"];
+
+  List<String> columna_cliente=["idcliente","nombre","apellido","email","telefono","limite_credito",
+                                "forma_pago","activo","idempresa"];
 
   DBProvider._();
   //Creamos el metodo para verificar si la tabla existe
@@ -131,6 +136,22 @@ class DBProvider{
           )
          ''');
          print("Tabla existencia creada");
+         await db.execute(
+           '''CREATE TABLE ${tabla_cliente}
+          (
+          ${columna_empresa[0]} INTEGER PRIMARY KEY AUTOINCREMENT,
+          ${columna_empresa[1]} TEXT,
+          ${columna_empresa[2]} TEXT,
+          ${columna_empresa[3]} TEXT,
+          ${columna_empresa[4]} TEXT,
+          ${columna_empresa[5]} REAL,
+          ${columna_empresa[6]} TEXT,
+          ${columna_empresa[7]} INTEGER
+          ${columna_empresa[8]} INTEGER
+          )
+         '''
+         );
+         print("Tabla cliente creada");
          //["idrol","accion","activo"];
          await db.execute('''
          INSERT INTO ${tabla_rol} 
@@ -161,6 +182,12 @@ class DBProvider{
       }
     );
       
+  }
+  //Crear cliente
+  Future<int> crearCliente(ClienteModel clienteModel)async{
+    final db=await database;
+    final res=await db.insert(tabla_cliente, clienteModel.toJson());
+    return res;
   }
 
   //Crear Empresa
