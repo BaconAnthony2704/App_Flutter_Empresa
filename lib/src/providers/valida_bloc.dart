@@ -13,8 +13,8 @@ class ValidaBloc with Validators, ChangeNotifier{
   Stream<String>get telefonoStream => _telefonoController.stream.transform(validaTelefono);
   Stream<String>get nitStream => _nitController.stream.transform(validaNit);
 
-  Stream<bool> get formValidStream => CombineLatestStream.combine4(nombreEmpresaStream,
-   emailStream,telefonoStream,nitStream, (a, b,c,d) => true);
+  Stream<bool> get formValidStream => CombineLatestStream.combine3(nombreEmpresaStream,
+   emailStream,telefonoStream, (a, b,c) => true);
 
    //Get y Set - Insertar valores al stream
    Function(String) get changeNombreEmpresa => _nombreEmpresaController.sink.add;

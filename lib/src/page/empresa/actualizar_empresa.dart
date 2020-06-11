@@ -250,13 +250,10 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.0),
             ),
-            hintText: "NIT",
-            labelText: "NIT",
-            errorText: snapshot.error,
+            hintText: "Identificacion tributaria",
+            labelText: "Identiticacion tributaria",
           ),
           initialValue: txtNit.text,
-          
-          maxLength: 17,
           onChanged: bloc.changeNit,
         );
       }
@@ -517,7 +514,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               EmpresaModel empresaModel=new EmpresaModel(
                 activo: 1,
                 nombre: bloc.nombreEmpresa,
-                nit: bloc.nit,
+                nit: (bloc.nit!=null)?bloc.nit:"-",
                 telefono: (txtCodigoPostal.text.isNotEmpty)?txtCodigoPostal.text+bloc.telefono:bloc.telefono,
                 direccion: this.direccion,
                 email:bloc.email,

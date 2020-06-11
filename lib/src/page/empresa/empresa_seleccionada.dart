@@ -90,7 +90,7 @@ class EmpresaSelected extends StatelessWidget {
             ),
             child: Table(
               children: [
-                Environment().generarFila("NIT","${this.nit}"),
+                Environment().generarFila("Identificacion tributaria","${this.nit}"),
                 TableRow(children: [Divider(),Divider()]),
                 Environment().generarFila("Giro", "${this.giro}"),
                 TableRow(children: [Divider(),Divider()]),

@@ -139,15 +139,15 @@ class DBProvider{
          await db.execute(
            '''CREATE TABLE ${tabla_cliente}
           (
-          ${columna_empresa[0]} INTEGER PRIMARY KEY AUTOINCREMENT,
-          ${columna_empresa[1]} TEXT,
-          ${columna_empresa[2]} TEXT,
-          ${columna_empresa[3]} TEXT,
-          ${columna_empresa[4]} TEXT,
-          ${columna_empresa[5]} REAL,
-          ${columna_empresa[6]} TEXT,
-          ${columna_empresa[7]} INTEGER
-          ${columna_empresa[8]} INTEGER
+          ${columna_cliente[0]} INTEGER PRIMARY KEY AUTOINCREMENT,
+          ${columna_cliente[1]} TEXT,
+          ${columna_cliente[2]} TEXT,
+          ${columna_cliente[3]} TEXT,
+          ${columna_cliente[4]} TEXT,
+          ${columna_cliente[5]} REAL,
+          ${columna_cliente[6]} TEXT,
+          ${columna_cliente[7]} INTEGER,
+          ${columna_cliente[8]} INTEGER
           )
          '''
          );
@@ -372,6 +372,14 @@ class DBProvider{
     final db=await database;
     final res=await db.update(tabla_producto, productoModel.toJson(),where: "${columna_producto[0]}=?",whereArgs: [productoModel.idproducto]);
     return res;
+  }
+
+  //Obtener TODOS los clientes
+  Future<List<ClienteModel>> obtenerClientes(int idempresa)async{
+    final db=await database;
+    final res=await db.query(tabla_cliente,where: "${columna_cliente[8]}=?",whereArgs: [idempresa]);
+    return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
+                        :[];
   }
 
 }
