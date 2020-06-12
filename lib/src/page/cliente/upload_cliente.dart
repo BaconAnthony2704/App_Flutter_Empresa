@@ -105,9 +105,11 @@ class _UploadClienteState extends State<UploadCliente> {
                     apellido: excel.tables[table].rows[i][1].toString(),
                     email: excel.tables[table].rows[i][2].toString(),
                     telefono: excel.tables[table].rows[i][3].toString(),
-                    limite_credito: double.parse(excel.tables[table].rows[i][4].toString()).roundToDouble(),
-                    forma_pago: excel.tables[table].rows[i][5].toString(),
-                    activo: int.parse(excel.tables[table].rows[i][6].toString()).truncate(),
+                    celular: excel.tables[table].rows[i][4].toString(),
+                    telefono_oficina: excel.tables[table].rows[i][5].toString(),
+                    limite_credito: double.parse(excel.tables[table].rows[i][6].toString()).roundToDouble(),
+                    forma_pago: excel.tables[table].rows[i][7].toString(),
+                    activo: int.parse(excel.tables[table].rows[i][8].toString()).truncate(),
                     idempresa: empresaProvider
                   );
                   lista.add(clienteModel);

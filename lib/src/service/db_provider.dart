@@ -39,7 +39,7 @@ class DBProvider{
   List<String> columna_existencia=["idexistencia","idproducto","idempresa","cantidad","activo"];
 
   List<String> columna_cliente=["idcliente","nombre","apellido","email","telefono","limite_credito",
-                                "forma_pago","activo","idempresa"];
+                                "forma_pago","activo","idempresa","celular","telefono_oficina"];
 
   DBProvider._();
   //Creamos el metodo para verificar si la tabla existe
@@ -147,7 +147,9 @@ class DBProvider{
           ${columna_cliente[5]} REAL,
           ${columna_cliente[6]} TEXT,
           ${columna_cliente[7]} INTEGER,
-          ${columna_cliente[8]} INTEGER
+          ${columna_cliente[8]} INTEGER,
+          ${columna_cliente[9]} TEXT,
+          ${columna_cliente[10]} TEXT
           )
          '''
          );

@@ -16,8 +16,8 @@ class HomePage extends StatelessWidget {
     return FutureBuilder<EmpresaModel>(
       future: empresaProvider.obtenerEmpresaFi(),
       builder: (context,snapshot){
-        if(!snapshot.hasData){
-          if(snapshot.data==null){
+        
+        if(snapshot.data==null){
           return Scaffold(
               appBar: AppBar(
                 title: Text("Crear Empresa"),
@@ -36,13 +36,16 @@ class HomePage extends StatelessWidget {
                 }
               ),
             );
-          }
+        }
+
+        if(!snapshot.hasData){
           return Scaffold(
             appBar: AppBar(),
             body: Center(
               child: CircularProgressIndicator(),
             ),
           );
+          
         }
         
           return Scaffold(

@@ -10,6 +10,8 @@ class ClienteModel{
   String forma_pago;
   int activo;
   int idempresa;
+  String celular;
+  String telefono_oficina;
 
   ClienteModel({
     this.idcliente,
@@ -20,7 +22,10 @@ class ClienteModel{
     this.limite_credito,
     this.forma_pago,
     this.activo,
-    this.idempresa
+    this.idempresa,
+    this.celular,
+    this.telefono_oficina
+
   });
 
   factory ClienteModel.fromJson(Map<String,dynamic>json)=>ClienteModel(
@@ -32,7 +37,9 @@ class ClienteModel{
     forma_pago    : json['forma_pago'],
     limite_credito: json['limite_credito'],
     activo        : json['activo'],
-    idempresa     : json['idempresa'] 
+    idempresa     : json['idempresa'],
+    celular       : json['celular'],
+    telefono_oficina: json['telefono_oficina'] 
   );
 
   Map<String,dynamic>toJson()=>{
@@ -44,7 +51,9 @@ class ClienteModel{
     'forma_pago'    : forma_pago,
     'limite_credito': limite_credito,
     'activo'        : activo,
-    'idempresa'     : idempresa
+    'idempresa'     : idempresa,
+    'celular'       : celular,
+    'telefono_oficina':telefono_oficina
   };
 
 }

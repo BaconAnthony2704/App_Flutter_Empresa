@@ -42,22 +42,37 @@ class ClienteHomePage extends StatelessWidget {
                 itemBuilder: (context,index){
                   return Column(
                     children: <Widget>[
-                      ListTile(
-                        trailing: Icon(FontAwesomeIcons.userTie),
-                        title: Text("${snapshot.data[index].nombre}, ${snapshot.data[index].apellido}"),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text("${snapshot.data[index].email}"),
-                            Table(
-                              children: [
-                                Environment().generarFila("Telefono", snapshot.data[index].telefono),
-                                Environment().generarFila("Limite de credito", "\$ ${snapshot.data[index].limite_credito}"),
-                                Environment().generarFila("Forma de pago", snapshot.data[index].forma_pago)
-                              ],
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: ListTile(
+                              title: Text("${snapshot.data[index].nombre}, ${snapshot.data[index].apellido}"),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text("${snapshot.data[index].email}"),
+                                  Table(
+                                    children: [
+                                      Environment().generarFila("Telefono", snapshot.data[index].telefono),
+                                      Environment().generarFila("Celular", snapshot.data[index].celular),
+                                      Environment().generarFila("Oficina", snapshot.data[index].telefono_oficina),
+                                      Environment().generarFila("Limite de credito", "\$ ${snapshot.data[index].limite_credito}"),
+                                      Environment().generarFila("Forma de pago", snapshot.data[index].forma_pago)
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Column(
+                            children: <Widget>[
+                              (snapshot.data[index].activo==1)
+                              ?IconButton(icon: Icon(FontAwesomeIcons.userTie,color: Colors.green,), onPressed: ()=>BotToast.showText(text: "Activo"))
+                              :IconButton(icon: Icon(FontAwesomeIcons.userTie,color: Colors.grey,), onPressed: ()=>BotToast.showText(text: "Desactivado")),
+                              IconButton(icon: Icon(Icons.edit,color: Colors.yellow,), onPressed: (){}),
+                            ],
+                          )
+                        ],
                       ),
                       Divider(),
                     ],
