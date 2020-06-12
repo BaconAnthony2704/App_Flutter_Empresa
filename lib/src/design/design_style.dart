@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/pdf_viewer.dart';
+import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
+import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/producto_provider.dart';
 import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
@@ -305,6 +307,80 @@ class Environment{
 
   }
 
+  writeOnPdfCliente({pdf:pw.Document, EmpresaModel empresaModel,ClienteProvider clienteProvider})async{
+    int i=0;
+    
+    List<ClienteModel> listaCliente=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
+        build: (pw.Context context){
+          return<pw.Widget>[
+            pw.Header(level: 0,
+            child: pw.Row(children: [
+              pw.Expanded(child: pw.Text(empresaModel.nombre)),
+            ])
+            ),
+            pw.Table(children: [
+              tableRow("Giro:",empresaModel.giro),
+              tableRow("Identificacion tributaria:",empresaModel.nit),
+              tableRow("Email:",empresaModel.email),
+              tableRow("Telefono:",empresaModel.telefono),
+              tableRow("Departamento:",empresaModel.departamento),
+              tableRow("Municipio:",empresaModel.municipio),
+              tableRow("Direccion:",empresaModel.direccion),
+            ]),
+            pw.Header(level: 1,
+            child: pw.Text("Clientes")),
+
+            pw.Expanded(
+              child: pw.Table(
+                children:[
+                  pw.TableRow(
+                    children: [
+                      pw.Text("No."),
+                      pw.Text("Nombre"),
+                      pw.Text("Apellido"),
+                      pw.Text("Telefono"),
+                      
+                      pw.Text("Forma de pago"),
+                      pw.Text("Limite de credito"),
+                    ]
+                  ),
+                  ...listaCliente.map((cliente){
+                    i++;
+                    return pw.TableRow(children: [
+                      pw.Text("${i}"),
+                      pw.Text(cliente.nombre!=null?cliente.nombre:"-"),
+                      pw.Text(cliente.apellido!=null?cliente.apellido:"-"),
+                      pw.Text(cliente.telefono!=null?cliente.telefono:"-"),
+                      
+                      pw.Text(cliente.forma_pago!=null?cliente.forma_pago:"-"),
+                      pw.Text(cliente.limite_credito.toString())
+
+                    ]);
+                  }).toList()
+
+                ]
+              ),
+            )
+
+          ];
+        },
+        footer: (context){
+          return pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(DateTime.now().toIso8601String())
+          );
+        }
+      )
+    );
+
+  }
+
+
+
   Future savePdf({pdf:pw.Document,File file})async{
     // Directory directory=await getApplicationDocumentsDirectory();
     // String documentPath=directory.path;
@@ -344,6 +420,41 @@ class Environment{
     
 
   }
+
+  Future<String> downloadExcelCliente({List<ClienteModel> listaCliente})async{
+    String hoja="Sheet1";
+    Directory ruta=await DownloadsPathProvider.downloadsDirectory;
+    //List<ProductoModel> listaProducto=lista;
+    var excel=Excel.createExcel();
+    String colorTexto="#252850";
+    String colorFondo="#BDECB6";
+
+    excel.updateCell(hoja, CellIndex.indexByString("A1"),"nombre",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("B1"), "apellido",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("C1"), "telefono",fontColorHex:colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("D1"), "email",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("E1"), "forma de pago",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("F1"), "limite de credito",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    for(int i=0;i<listaCliente.length;i++){
+      excel.updateCell(hoja, CellIndex.indexByString("A${i+2}"), listaCliente[i].nombre);
+      excel.updateCell(hoja, CellIndex.indexByString("B${i+2}"), listaCliente[i].apellido);
+      excel.updateCell(hoja, CellIndex.indexByString("C${i+2}"), listaCliente[i].telefono);
+      excel.updateCell(hoja, CellIndex.indexByString("D${i+2}"), listaCliente[i].email);
+      excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaCliente[i].forma_pago);
+      excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaCliente[i].limite_credito);
+    }
+    excel.encode().then((onValue){
+      File(join("${ruta.path}/excel_cliente_${DateTime.now().toIso8601String()}.xlsx"))
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(onValue);
+    });
+    return ruta.path;
+    
+    
+
+  }
+
+
 
   List<CustomPopupMenu> choicesProducto({BuildContext context,ProductoProvider productoModel,EmpresaProvider empresaProvider}){
     List<CustomPopupMenu> choices=[
@@ -408,7 +519,74 @@ class Environment{
 
 
 
+  List<CustomPopupMenu> choicesCliente({BuildContext context,ClienteProvider clienteProvider,EmpresaProvider empresaProvider}){
+    List<CustomPopupMenu> choices=[
+    CustomPopupMenu(title: "Imprimir",icono: Icons.print,funcion: ()async{
+      EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
+      List<ClienteModel> lista=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+      bool estado=await Environment().confirmar(context, "Imprimir", "Desea imprmir los clientes?");
+      if(estado){
+        Navigator.of(context).pop();
+        var status=await Permission.storage.request();
+        if(lista.length>0 && status.isGranted){
+          pw.Document pdf=pw.Document();
+          Directory documentDirectory=await getApplicationDocumentsDirectory();
+          String documentPath=documentDirectory.path;
+          String fullPath="$documentPath/${DateTime.now().year}_${DateTime.now().month}_"
+          "${DateTime.now().day}_${DateTime.now().hour}${DateTime.now().minute}_example.pdf";
+          File file=File(fullPath);
+          clienteProvider.notifyListeners();
+          await Environment().writeOnPdfCliente(pdf: pdf,empresaModel: empresaModel,
+          clienteProvider: clienteProvider);
+          await Environment().savePdf(pdf: pdf,file: file );
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context)=>PdfPreviweScreen(path: fullPath,),
+            settings: RouteSettings(arguments: pdf)
+          )
+          );
+          //await Printing.layoutPdf(onLayout: (PdfPageFormat format)async=>pdf.save());
+          pdf=null;
+        }else{
+          BotToast.showText(text: "No hay clientes disponibles");
+        }
+
+      }else{
+        BotToast.showText(text: "Cancelado");
+      }
+      
+    }),
+    CustomPopupMenu(title: "Exportar",icono: FontAwesomeIcons.fileExcel, 
+    funcion: ()async{
+      Navigator.of(context).pop();
+      Navigator.of(context).pushNamed('upload_cliente');
+    }),
+    CustomPopupMenu(title:"Importar", icono: FontAwesomeIcons.cloudDownloadAlt,
+    funcion: ()async{
+      Navigator.of(context).pop();
+      EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
+      List<ClienteModel> lista=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+      
+      if(lista.length>0){
+        String texto=await Environment().downloadExcelCliente(listaCliente: lista );
+        BotToast.showNotification(
+        leading: (_)=>Icon(Icons.file_download),
+        title: (_)=>Text("Guardado en: "+texto)
+      );
+      }else{
+        BotToast.showText(text: "No hay productos disponibles");
+      }
+
+    })
+    ];
+    return choices;
+  }
+
+
+
 }
+
+
+
 
 pw.TableRow tableRow(String texto,String concepto){
   return pw.TableRow(

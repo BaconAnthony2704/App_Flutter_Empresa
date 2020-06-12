@@ -12,18 +12,16 @@ class ClienteHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     ClienteProvider clienteProvider=Provider.of<ClienteProvider>(context);
     final idempresa=Provider.of<EmpresaProvider>(context).idempresa;
+    EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(icon: Icon(FontAwesomeIcons.solidFileExcel), onPressed: ()async{
-            bool estado=await Environment().confirmar(context, "Cargar archivos", "Desea cargar los archivos?");
-            if(estado){
-              Navigator.of(context).pushNamed('upload_cliente');
-            }
-            else{
-              BotToast.showText(text: "Cancelado");
-            }
-          }),
+          Environment().mostrarPopupMenu(choices: Environment().choicesCliente(
+            context: context,
+            clienteProvider: clienteProvider,
+            empresaProvider: empresaProvider
+          )
+        )
         ],
       ),
       body: Container(
