@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/usuario_model.dart';
+import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
+import 'package:mantenimiento_empresa/src/page/menu/plantilla_mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/producto/contenedor_principal.dart';
 import 'package:mantenimiento_empresa/src/page/producto/contenedor_principal_promocion.dart';
 import 'package:mantenimiento_empresa/src/providers/usuario_provider.dart';
@@ -17,12 +19,24 @@ class ProductoPage extends StatefulWidget {
 class _ProductoPageState extends State<ProductoPage> {
   PreferenciasUsuario prefs;
   int pos;
+  List<CustomPopupMenu> choices=[
+    CustomPopupMenu(title: "Imprimir",icono: Icons.print,funcion: ()=>print("Imprimir")),
+    CustomPopupMenu(title: "Exportar",icono: FontAwesomeIcons.fileExcel,funcion: ()=>print("Exportar")),
+    CustomPopupMenu(title:"Importar", icono: FontAwesomeIcons.cloudDownloadAlt,funcion: ()=>print("Importar"))
+  ];
+  CustomPopupMenu _selectedChoices;
   @override
   void initState() {
     // TODO: implement initState
     pos=0;
     prefs=PreferenciasUsuario();
+    _selectedChoices=choices[0];
     super.initState();
+  }
+  void _select(CustomPopupMenu choice){
+    setState(() {
+      _selectedChoices=choice;
+    });
   }
   @override
   Widget build(BuildContext context){
@@ -33,8 +47,7 @@ class _ProductoPageState extends State<ProductoPage> {
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search), onPressed: (){}),
           IconButton(icon: Icon(Icons.filter_list), onPressed: (){}),
-          IconButton(icon: Icon(FontAwesomeIcons.ellipsisV), onPressed: (){}),
-          // 
+          mostrarPopupMenu(choices: choices)
         ],
       ),
       body: _callPage(pos),
