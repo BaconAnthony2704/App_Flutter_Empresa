@@ -42,7 +42,12 @@ dependencies:
   http:
   geolocator: ^5.3.2+2
   syncfusion_flutter_charts: ^18.1.56
-
+  pdf: ^1.8.1
+  printing: ^3.4.0
+  flutter_pdfview: ^1.0.0+10
+  permission_handler: ^5.0.0+hotfix.8
+  downloads_path_provider: ^0.1.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

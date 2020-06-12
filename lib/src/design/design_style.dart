@@ -1,12 +1,24 @@
+import 'dart:io';
+
 import 'package:bot_toast/bot_toast.dart';
+import 'package:downloads_path_provider/downloads_path_provider.dart';
+import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
+import 'package:mantenimiento_empresa/src/models/producto_model.dart';
+import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
+import 'package:mantenimiento_empresa/src/providers/producto_provider.dart';
 import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 class Environment{
+  Directory _downloadDirectory;
   EdgeInsetsGeometry get metMargen5All => EdgeInsets.all(5.0);
   Color get metColor => Colors.white;
 
@@ -196,5 +208,151 @@ class Environment{
     return estado;
   }
 
-  
+  PopupMenuButton mostrarPopupMenu({@required List<CustomPopupMenu> choices}){
+  return PopupMenuButton<CustomPopupMenu>(
+    elevation: 3.2,
+    onSelected: (choice){
+
+    },
+    itemBuilder: (context){
+      return choices.map((CustomPopupMenu choice){
+        return PopupMenuItem(
+        value: choice,
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(choice.icono),
+          title: Text(choice.title),
+          onTap:choice.funcion
+        ),
+      );
+      }).toList();
+    });
+  }
+
+  writeOnPdfProductos({pdf:pw.Document, EmpresaModel empresaModel,ProductoProvider productoProvider})async{
+    int i=0;
+    double totalP=0.0;
+    double iva=0.13;
+    List<ProductoModel> listaProducto=await productoProvider.obtenerTodosProductos(empresaModel.idempresa);
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
+        build: (pw.Context context){
+          return<pw.Widget>[
+            pw.Header(level: 0,
+            child: pw.Row(children: [
+              pw.Expanded(child: pw.Text(empresaModel.nombre)),
+            ])
+            ),
+            pw.Table(children: [
+              tableRow("Giro:",empresaModel.giro),
+              tableRow("Identificacion tributaria:",empresaModel.nit),
+              tableRow("Email:",empresaModel.email),
+              tableRow("Telefono:",empresaModel.telefono),
+              tableRow("Departamento:",empresaModel.departamento),
+              tableRow("Municipio:",empresaModel.municipio),
+              tableRow("Direccion:",empresaModel.direccion),
+            ]),
+            pw.Header(level: 1,
+            child: pw.Text("Productos")),
+
+            pw.Expanded(
+              child: pw.Table(
+                children:[
+                  pw.TableRow(
+                    children: [
+                      pw.Text("No."),
+                      pw.Text("Nombre"),
+                      pw.Text("Tipo"),
+                      pw.Text("Categoria"),
+                      pw.Text("Precio"),
+                      pw.Text("Cantidad"),
+                      pw.Text("Sub-Total"),
+                    ]
+                  ),
+                  ...listaProducto.map((producto){
+                    i++;
+                    totalP=producto.cantidad*producto.precio;
+                    return pw.TableRow(children: [
+                      pw.Text("${i}"),
+                      pw.Text(producto.nombre),
+                      pw.Text(producto.tipo),
+                      pw.Text(producto.categoria!=null?producto.categoria:"Categoria"),
+                      pw.Text("\$ "+producto.precio.toString()),
+                      pw.Text(producto.cantidad.toString()),
+                      pw.Text("\$ "+totalP.toString())
+
+                    ]);
+                  }).toList()
+
+                ]
+              ),
+            )
+
+          ];
+        },
+        footer: (context){
+          return pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Text(DateTime.now().toIso8601String())
+          );
+        }
+      )
+    );
+
+  }
+
+  Future savePdf({pdf:pw.Document,File file})async{
+    // Directory directory=await getApplicationDocumentsDirectory();
+    // String documentPath=directory.path;
+    // File file=File(filePath);
+    file.writeAsBytesSync(pdf.save());
+  }
+
+  Future<String> downloadExcelProducto({List<ProductoModel> listaProducto})async{
+    String hoja="Sheet1";
+    Directory ruta=await DownloadsPathProvider.downloadsDirectory;
+    //List<ProductoModel> listaProducto=lista;
+    var excel=Excel.createExcel();
+    String colorTexto="#252850";
+    String colorFondo="#BDECB6";
+
+    excel.updateCell(hoja, CellIndex.indexByString("A1"),"nombre",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("B1"), "tipo",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("C1"), "categoria",fontColorHex:colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("D1"), "descripcion",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("E1"), "precio",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("F1"), "cantidad",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    for(int i=0;i<listaProducto.length;i++){
+      excel.updateCell(hoja, CellIndex.indexByString("A${i+2}"),listaProducto[i].nombre);
+      excel.updateCell(hoja, CellIndex.indexByString("B${i+2}"), listaProducto[i].tipo);
+      excel.updateCell(hoja, CellIndex.indexByString("C${i+2}"), listaProducto[i].categoria);
+      excel.updateCell(hoja, CellIndex.indexByString("D${i+2}"), listaProducto[i].descripcion);
+      excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaProducto[i].precio);
+      excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaProducto[i].cantidad);
+    }
+    excel.encode().then((onValue){
+      File(join("${ruta.path}/excel_producto_${DateTime.now().toIso8601String()}.xlsx"))
+      ..createSync(recursive: true)
+      ..writeAsBytesSync(onValue);
+    });
+    return ruta.path;
+    
+    
+
+  }
+
+
+
 }
+
+pw.TableRow tableRow(String texto,String concepto){
+  return pw.TableRow(
+    children: [
+      pw.Paragraph(text: texto),
+      pw.Paragraph(text: concepto),
+    ]
+  );
+}
+
