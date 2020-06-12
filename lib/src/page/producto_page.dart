@@ -31,19 +31,10 @@ class _ProductoPageState extends State<ProductoPage> {
       drawer: MenuLateral(),
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(icon: Icon(FontAwesomeIcons.fileExcel), onPressed: ()async{
-            UsuarioModel usuarioModel=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
-            if(usuarioModel.docreate==1){
-              bool estado=await Environment().confirmar(context, "Cargar archivo", "Desea cargar archivos desde excel?");
-              if(estado){
-                Navigator.of(context).pushNamed('upload_producto');
-              }else{
-                BotToast.showText(text: "Cancelado");
-              }
-            }else{
-              await Environment().mostrarAlerta(context, "Solicite permisos al administrador");
-            }
-          })
+          IconButton(icon: Icon(Icons.search), onPressed: (){}),
+          IconButton(icon: Icon(Icons.filter_list), onPressed: (){}),
+          IconButton(icon: Icon(FontAwesomeIcons.ellipsisV), onPressed: (){}),
+          // 
         ],
       ),
       body: _callPage(pos),

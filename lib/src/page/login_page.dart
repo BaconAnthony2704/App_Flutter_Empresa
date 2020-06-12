@@ -178,6 +178,7 @@ class LoginPage extends StatelessWidget {
      integridad=await usuarioProvider.verificarIntegridad(login.email);
      
     acceso=await empresaProvider.obtenerUsuarioRegistrado(login.email, login.password);
+    empresaProvider.notifyListeners();
     if(acceso){
       _prefs.ultimaPagina='/';
       Navigator.of(context).pushReplacementNamed('/');

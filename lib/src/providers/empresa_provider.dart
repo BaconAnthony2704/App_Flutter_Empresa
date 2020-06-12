@@ -24,7 +24,6 @@ class EmpresaProvider with ChangeNotifier{
     try{
       usuarioModel=await DBProvider.db.getUsuarioRegistrado(email, password);
       _prefs.idusuario=usuarioModel.idusuario;
-      notifyListeners();
       if(usuarioModel!=null){
         return true;
       }else{

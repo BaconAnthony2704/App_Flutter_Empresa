@@ -55,6 +55,7 @@ class _UploadClienteState extends State<UploadCliente> {
             if(estado){
               lista.forEach((clie) async{
                 contar+=await clienteProvider.ingresarCliente(clie);
+                clienteProvider.notifyListeners();
                });
                if(contar==0){
                  lista.clear();

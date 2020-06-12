@@ -12,8 +12,10 @@ import 'package:mantenimiento_empresa/src/routes/routes.dart';
 import 'package:mantenimiento_empresa/src/service/departamento_service.dart';
 import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
 import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_core/core.dart';
  
 void main()async{
+  SyncfusionLicense.registerLicense("NT8mJyc2IWhia31ifWN9Z2FoYmF8YGJ8ampqanNiYmlmamlmanMDHmgwPD0gPD86NzJiZRM0PjI6P30wPD4=");
   WidgetsFlutterBinding.ensureInitialized();
   final prefs=PreferenciasUsuario();
   await prefs.initPrefs();
@@ -25,6 +27,7 @@ void main()async{
 }
  
 class MyApp extends StatelessWidget {
+  
   final prefs=new PreferenciasUsuario();
   @override
   Widget build(BuildContext context) {

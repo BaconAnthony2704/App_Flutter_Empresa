@@ -13,7 +13,7 @@ class ClienteProvider with ChangeNotifier{
     if(lista==[]){
       return lista=[];
     }
-    notifyListeners();
+    //notifyListeners();
     return lista;
   }
 }
