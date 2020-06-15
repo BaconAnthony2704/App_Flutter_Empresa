@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/cliente_home.dart';
+import 'package:mantenimiento_empresa/src/page/cliente/edit_cliente.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/upload_cliente.dart';
 import 'package:mantenimiento_empresa/src/page/empresa/actualizar_empresa.dart';
 import 'package:mantenimiento_empresa/src/page/empresa/mi_empresa.dart';
@@ -39,6 +40,7 @@ Map<String, WidgetBuilder> getApplicationRoutes() {
       /*Cliente */
       'cliente_home':(BuildContext context)=>ClienteHomePage(),
       'upload_cliente':(BuildContext context)=>UploadCliente(),
+      'edit_cliente':(BuildContext context)=>EditClientePage(),
 
     };
   }

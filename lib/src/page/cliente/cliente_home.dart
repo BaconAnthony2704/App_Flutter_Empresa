@@ -80,7 +80,9 @@ class ClienteHomePage extends StatelessWidget {
                               (snapshot.data[index].activo==1)
                               ?IconButton(icon: Icon(FontAwesomeIcons.userTie,color: Colors.green,), onPressed: ()=>BotToast.showText(text: "Activo"))
                               :IconButton(icon: Icon(FontAwesomeIcons.userTie,color: Colors.grey,), onPressed: ()=>BotToast.showText(text: "Desactivado")),
-                              IconButton(icon: Icon(Icons.edit,color: Colors.yellow,), onPressed: (){}),
+                              IconButton(icon: Icon(Icons.edit,color: Colors.yellow,), onPressed: (){
+                                Navigator.of(context).pushNamed('edit_cliente',arguments: snapshot.data[index]);
+                              }),
                             ],
                           )
                         ],
@@ -98,7 +100,7 @@ class ClienteHomePage extends StatelessWidget {
         child: Icon(Icons.add),
         backgroundColor: Theme.of(context).textSelectionColor,
         onPressed: (){
-
+          Navigator.of(context).pushNamed('edit_cliente');
         }
       ),
       drawer: MenuLateral(),

@@ -25,4 +25,9 @@ class ClienteProvider with ChangeNotifier{
     }
     return lista;
   }
+
+  Future<int> actualizarCliente(ClienteModel clienteModel)async{
+    int update=await DBProvider.db.updateCliente(clienteModel);
+    return update;
+  }
 }

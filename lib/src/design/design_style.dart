@@ -613,6 +613,14 @@ class Environment{
     return choices;
   }
 
+  bool isNumeric(String s){
+    if(s.isEmpty){
+      return false;
+    }
+    final n=num.tryParse(s);
+    return (n==null)?false:true;
+  }
+
 
 
 }
@@ -628,4 +636,6 @@ pw.TableRow tableRow(String texto,String concepto){
     ]
   );
 }
+
+
 

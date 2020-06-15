@@ -403,4 +403,10 @@ class DBProvider{
                         :[];
   }
 
+  Future<int> updateCliente(ClienteModel cliente)async{
+    final db=await database;
+    final res=await db.update(tabla_cliente,cliente.toJson(),where: "${columna_cliente[0]}=?",whereArgs: [cliente.idcliente]);
+    return res;
+  }
+
 }
