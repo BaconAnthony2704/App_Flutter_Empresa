@@ -384,9 +384,13 @@ class DBProvider{
                         :[];
   }
 
-  // Future<List<ProductoModel>> buscarProducto(String query)async{
-  //   final db=await database;
-  //   final
-  // }
+  Future<List<ProductoModel>> searchProducto(int idEmpresa,String query)async{
+    /*columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa",
+    "descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"] */
+    final db=await database;
+    final res=await db.query(tabla_producto,where: "${columna_usuario[5]}=? AND ${columna_usuario[1]} LIKE ?",whereArgs: [idEmpresa,"%${query}%"]);
+    return res.isNotEmpty?res.map((producto) => ProductoModel.fromJson(producto)).toList()
+                          :[];
+  }
 
 }

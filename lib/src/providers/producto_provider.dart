@@ -8,6 +8,7 @@ import 'package:mime_type/mime_type.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 class ProductoProvider with ChangeNotifier{
+  String consultaP;
   ProductoProvider();
 
   Future<int> insertarProducto(ProductoModel productoModel)async{
@@ -21,9 +22,14 @@ class ProductoProvider with ChangeNotifier{
   }
 
   Future<List<ProductoModel>> obtenerTodosProductos(int idempresa)async{
-    List<ProductoModel>lista= await DBProvider.db.getTodosProductos(idempresa);
+    List<ProductoModel>lista=new List();
+    
+    lista =await DBProvider.db.getTodosProductos(idempresa);
     //notifyListeners();
     return lista;
+    
+    
+    
   }
   Future<String> subirImagen(File imagen)async{
     final url=Uri.parse('https://api.cloudinary.com/v1_1/dunsiuhtb/image/upload?upload_preset=g3ygbk4x');
@@ -53,4 +59,14 @@ class ProductoProvider with ChangeNotifier{
     notifyListeners();
     return update;
   }
+
+  Future<List<ProductoModel>> buscarProducto(int idEmpresa,String query)async{
+    consultaP=query;
+    //notifyListeners();
+    List<ProductoModel>list=await  DBProvider.db.searchProducto(idEmpresa, query);
+    return list;
+
+  }
+
+  
 }

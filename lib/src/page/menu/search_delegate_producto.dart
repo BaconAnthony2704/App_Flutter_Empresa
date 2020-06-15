@@ -31,7 +31,7 @@ class DataSearchProducto extends SearchDelegate{
    EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
 
    return FutureBuilder<List<ProductoModel>>(
-     future: productoProvider.obtenerTodosProductos(empresaProvider.idempresa),
+     future: productoProvider.buscarProducto(empresaProvider.idempresa,query),
      builder: (context,snapshot){
        if(!snapshot.hasData){
          return Center(child: CircularProgressIndicator(),);
@@ -42,14 +42,15 @@ class DataSearchProducto extends SearchDelegate{
        return ListView.builder(
          itemBuilder:(context,index){
            return ListTile(
-             leading: (snapshot.data[index].urlimagen!=null)
+             leading: (snapshot.data[index].urlimagen!="")
              ?FadeInImage(placeholder: AssetImage('assets/img/silver_balls.gif'), 
              image: NetworkImage(snapshot.data[index].urlimagen))
              :Image(image: AssetImage('assets/img/no_product.png')),
              title: Text(snapshot.data[index].nombre),
-             subtitle: Text(snapshot.data[index].precio.toString()),
+             subtitle: Text("\$ "+snapshot.data[index].precio.toString()),
              onTap: (){
                close(context, null);
+               print(query);
              },
            );
        },
@@ -75,7 +76,7 @@ class DataSearchProducto extends SearchDelegate{
     }
 
     return FutureBuilder<List<ProductoModel>>(
-     future: productoProvider.obtenerTodosProductos(empresaProvider.idempresa),
+     future: productoProvider.buscarProducto(empresaProvider.idempresa,query),
      builder: (context,snapshot){
        if(!snapshot.hasData){
          return Center(child: CircularProgressIndicator(),);
@@ -91,9 +92,10 @@ class DataSearchProducto extends SearchDelegate{
              image: NetworkImage(snapshot.data[index].urlimagen))
              :Image(image: AssetImage('assets/img/no_product.png')),
              title: Text(snapshot.data[index].nombre),
-             subtitle: Text(snapshot.data[index].precio.toString()),
+             subtitle: Text("\$ "+snapshot.data[index].precio.toString()),
              onTap: (){
                close(context, null);
+               print("Query buildSugentions: "+query);
              },
            );
        },
@@ -105,16 +107,17 @@ class DataSearchProducto extends SearchDelegate{
     
   }
 
-  @override
-  ThemeData appBarTheme(BuildContext context) {
-    // TODO: implement appBarTheme
-    final ThemeData theme=Theme.of(context);
-    return theme.copyWith(
-      primaryColor: theme.primaryColor,
-      primaryIconTheme: theme.primaryIconTheme,
-      primaryColorBrightness: theme.primaryColorBrightness,
-      primaryTextTheme: theme.primaryTextTheme
-    );
-  }
+  // @override
+  // ThemeData appBarTheme(BuildContext context) {
+  //   // TODO: implement appBarTheme
+  //   final ThemeData theme=Theme.of(context);
+  //   return theme.copyWith(
+  //     //primaryColor: theme.primaryColor,
+  //     primaryIconTheme: theme.primaryIconTheme,
+  //     //primaryColorBrightness: theme.primaryColorBrightness,
+  //     //primaryTextTheme: theme.primaryTextTheme,
+  //     //textTheme: Theme.of(context).textTheme,
+  //   );
+  // }
 
 }
