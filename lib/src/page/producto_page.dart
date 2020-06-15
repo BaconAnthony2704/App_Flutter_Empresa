@@ -47,6 +47,11 @@ class _ProductoPageState extends State<ProductoPage> {
             //BotToast.showText(text: "Proximamente busqueda");
             showSearch(context: context, delegate: DataSearchProducto());
           }),
+          (productoModel.consultaP!=null)?IconButton(icon: Icon(Icons.close), onPressed: (){
+            productoModel.consultaP=null;
+            productoModel.notifyListeners();
+          })
+          :Container(),
           IconButton(icon: Icon(Icons.filter_list), onPressed: (){
             BotToast.showText(text: "Proximamente Filtro");
           }),

@@ -20,7 +20,8 @@ class ContenedorPrincipal extends StatelessWidget {
     ProductoProvider productoProvider=Provider.of<ProductoProvider>(context);
     int idempresa=Provider.of<EmpresaProvider>(context).idempresa;
     return FutureBuilder<List<ProductoModel>>(
-      future: productoProvider.obtenerTodosProductos(idempresa),
+      future: (productoProvider.consultaP==null)?productoProvider.obtenerTodosProductos(idempresa)
+      :productoProvider.buscarProducto(idempresa, productoProvider.consultaP),
       builder: (context,snapshot){
         if(!snapshot.hasData){
           return Center(child: CircularProgressIndicator(),);
@@ -28,6 +29,7 @@ class ContenedorPrincipal extends StatelessWidget {
         if(snapshot.data.length==0){
           return Center(child: Text("Agregar producto(s)"),);
         }
+        
         return Container(
           margin: Environment().metMargen5All,
           child: ListView.builder(

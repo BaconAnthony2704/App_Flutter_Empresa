@@ -50,6 +50,8 @@ class DataSearchProducto extends SearchDelegate{
              subtitle: Text("\$ "+snapshot.data[index].precio.toString()),
              onTap: (){
                close(context, null);
+               //productoProvider.consultaP=query;
+               productoProvider.notifyListeners();
                print(query);
              },
            );
@@ -95,6 +97,8 @@ class DataSearchProducto extends SearchDelegate{
              subtitle: Text("\$ "+snapshot.data[index].precio.toString()),
              onTap: (){
                close(context, null);
+               productoProvider.consultaP=query;
+               productoProvider.notifyListeners();
                print("Query buildSugentions: "+query);
              },
            );

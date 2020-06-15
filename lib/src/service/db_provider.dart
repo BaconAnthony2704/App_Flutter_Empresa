@@ -393,4 +393,14 @@ class DBProvider{
                           :[];
   }
 
+  Future<List<ClienteModel>> searchCliente(int idEmpresa,String query)async{
+    /*columna_cliente=["idcliente","nombre","apellido","email","telefono","limite_credito",
+    "forma_pago","activo","idempresa","celular","telefono_oficina"];*/
+    final db=await database;
+    final res=await db.query(tabla_cliente,
+    where: "${columna_cliente[8]}=? AND ${columna_cliente[1]} LIKE ? OR ${columna_cliente[2]} LIKE ?",whereArgs: [idEmpresa,"%${query}%","%${query}%"]);
+    return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
+                        :[];
+  }
+
 }

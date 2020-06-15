@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
+import 'package:mantenimiento_empresa/src/page/menu/search_delegate_cliente.dart';
 import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,15 @@ class ClienteHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
+          IconButton(icon: Icon(Icons.search), onPressed: (){
+            showSearch(context: context, delegate: DataSearchCliente());
+          }),
+          (clienteProvider.consultaP!=null)?IconButton(icon: Icon(Icons.close), onPressed: (){
+            clienteProvider.consultaP=null;
+            clienteProvider.notifyListeners();
+          })
+          :Container(),
+          IconButton(icon: Icon(Icons.filter_list), onPressed: (){}),
           Environment().mostrarPopupMenu(choices: Environment().choicesCliente(
             context: context,
             clienteProvider: clienteProvider,
@@ -29,7 +39,8 @@ class ClienteHomePage extends StatelessWidget {
         height: double.infinity,
         margin: Environment().metMargen5All,
         child: FutureBuilder<List<ClienteModel>>(
-          future: clienteProvider.mostrarClientes(idempresa),
+          future:(clienteProvider.consultaP==null)? clienteProvider.mostrarClientes(idempresa)
+          :clienteProvider.buscarCliente(idempresa, clienteProvider.consultaP),
           builder: (context,snapshot){
             if(!snapshot.hasData){
               return Center(child: CircularProgressIndicator(),);

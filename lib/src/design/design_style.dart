@@ -238,7 +238,12 @@ class Environment{
     int i=0;
     double totalP=0.0;
     double iva=0.13;
-    List<ProductoModel> listaProducto=await productoProvider.obtenerTodosProductos(empresaModel.idempresa);
+    List<ProductoModel> listaProducto=new List();
+    if(productoProvider.consultaP==null){
+      listaProducto=await productoProvider.obtenerTodosProductos(empresaModel.idempresa);
+    }else{
+      listaProducto=await productoProvider.buscarProducto(empresaModel.idempresa, productoProvider.consultaP);
+    }
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -310,8 +315,12 @@ class Environment{
 
   writeOnPdfCliente({pdf:pw.Document, EmpresaModel empresaModel,ClienteProvider clienteProvider})async{
     int i=0;
-    
-    List<ClienteModel> listaCliente=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+    List<ClienteModel> listaCliente;
+    if(clienteProvider.consultaP==null){
+      listaCliente=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+    }else{
+      listaCliente=await clienteProvider.buscarCliente(empresaModel.idempresa, clienteProvider.consultaP);
+    }
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
@@ -437,16 +446,20 @@ class Environment{
     excel.updateCell(hoja, CellIndex.indexByString("A1"),"nombre",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
     excel.updateCell(hoja, CellIndex.indexByString("B1"), "apellido",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
     excel.updateCell(hoja, CellIndex.indexByString("C1"), "telefono",fontColorHex:colorTexto,backgroundColorHex: colorFondo);
-    excel.updateCell(hoja, CellIndex.indexByString("D1"), "email",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
-    excel.updateCell(hoja, CellIndex.indexByString("E1"), "forma de pago",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
-    excel.updateCell(hoja, CellIndex.indexByString("F1"), "limite de credito",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("D1"), "celular",fontColorHex:colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("E1"), "telefono oficina",fontColorHex:colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("F1"), "email",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("G1"), "forma de pago",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
+    excel.updateCell(hoja, CellIndex.indexByString("H1"), "limite de credito",fontColorHex: colorTexto,backgroundColorHex: colorFondo);
     for(int i=0;i<listaCliente.length;i++){
       excel.updateCell(hoja, CellIndex.indexByString("A${i+2}"), listaCliente[i].nombre);
       excel.updateCell(hoja, CellIndex.indexByString("B${i+2}"), listaCliente[i].apellido);
       excel.updateCell(hoja, CellIndex.indexByString("C${i+2}"), listaCliente[i].telefono);
-      excel.updateCell(hoja, CellIndex.indexByString("D${i+2}"), listaCliente[i].email);
-      excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaCliente[i].forma_pago);
-      excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaCliente[i].limite_credito);
+      excel.updateCell(hoja, CellIndex.indexByString("D${i+2}"), listaCliente[i].celular);
+      excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaCliente[i].telefono_oficina);
+      excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaCliente[i].email);
+      excel.updateCell(hoja, CellIndex.indexByString("G${i+2}"), listaCliente[i].forma_pago);
+      excel.updateCell(hoja, CellIndex.indexByString("H${i+2}"), listaCliente[i].limite_credito);
     }
     var estado=await Permission.storage.request();
     if(estado.isGranted){
@@ -509,7 +522,12 @@ class Environment{
     funcion: ()async{
       Navigator.of(context).pop();
       EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
-      List<ProductoModel> lista=await productoModel.obtenerTodosProductos(empresaModel.idempresa);
+      List<ProductoModel> lista=new List();
+      if(productoModel.consultaP==null){
+        lista=await productoModel.obtenerTodosProductos(empresaModel.idempresa);
+      }else{
+        lista=await productoModel.buscarProducto(empresaModel.idempresa,productoModel.consultaP);
+      }
       
       if(lista.length>0){
         String texto=await Environment().downloadExcelProducto(listaProducto:lista );
@@ -573,7 +591,12 @@ class Environment{
     funcion: ()async{
       Navigator.of(context).pop();
       EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
-      List<ClienteModel> lista=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+      List<ClienteModel> lista;
+      if(clienteProvider.consultaP==null){
+        lista=await clienteProvider.mostrarClientes(empresaModel.idempresa);
+      }else{
+        lista=await clienteProvider.buscarCliente(empresaModel.idempresa, clienteProvider.consultaP);
+      }
       
       if(lista.length>0){
         String texto=await Environment().downloadExcelCliente(listaCliente: lista );
