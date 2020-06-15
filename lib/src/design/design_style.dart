@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
-import 'package:downloads_path_provider/downloads_path_provider.dart';
+//import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:excel/excel.dart';
+import 'package:ext_storage/ext_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -390,8 +391,8 @@ class Environment{
 
   Future<String> downloadExcelProducto({List<ProductoModel> listaProducto})async{
     String hoja="Sheet1";
-    Directory ruta=await DownloadsPathProvider.downloadsDirectory;
-    //List<ProductoModel> listaProducto=lista;
+    String ruta=await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
+    
     var excel=Excel.createExcel();
     String colorTexto="#252850";
     String colorFondo="#BDECB6";
@@ -410,12 +411,16 @@ class Environment{
       excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaProducto[i].precio);
       excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaProducto[i].cantidad);
     }
-    excel.encode().then((onValue){
-      File(join("${ruta.path}/excel_producto_${DateTime.now().toIso8601String()}.xlsx"))
+    var estado=await Permission.storage.request();
+    if(estado.isGranted){
+      excel.encode().then((onValue){
+      File(join("${ruta}/excel_producto_${DateTime.now().toIso8601String()}.xlsx"))
       ..createSync(recursive: true)
       ..writeAsBytesSync(onValue);
-    });
-    return ruta.path;
+      });
+      return "Guardado en: "+ruta;
+    }
+    return "Solicite permisos de acceso";
     
     
 
@@ -423,8 +428,8 @@ class Environment{
 
   Future<String> downloadExcelCliente({List<ClienteModel> listaCliente})async{
     String hoja="Sheet1";
-    Directory ruta=await DownloadsPathProvider.downloadsDirectory;
-    //List<ProductoModel> listaProducto=lista;
+    String ruta=await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
+  
     var excel=Excel.createExcel();
     String colorTexto="#252850";
     String colorFondo="#BDECB6";
@@ -443,12 +448,16 @@ class Environment{
       excel.updateCell(hoja, CellIndex.indexByString("E${i+2}"), listaCliente[i].forma_pago);
       excel.updateCell(hoja, CellIndex.indexByString("F${i+2}"), listaCliente[i].limite_credito);
     }
-    excel.encode().then((onValue){
-      File(join("${ruta.path}/excel_cliente_${DateTime.now().toIso8601String()}.xlsx"))
+    var estado=await Permission.storage.request();
+    if(estado.isGranted){
+      excel.encode().then((onValue){
+      File(join("${ruta}/excel_cliente_${DateTime.now().toIso8601String()}.xlsx"))
       ..createSync(recursive: true)
       ..writeAsBytesSync(onValue);
-    });
-    return ruta.path;
+      });
+      return "Guardado en: "+ruta;
+    }
+    return "Solicite permisos";
     
     
 
@@ -506,7 +515,7 @@ class Environment{
         String texto=await Environment().downloadExcelProducto(listaProducto:lista );
         BotToast.showNotification(
         leading: (_)=>Icon(Icons.file_download),
-        title: (_)=>Text("Guardado en: "+texto)
+        title: (_)=>Text(texto)
       );
       }else{
         BotToast.showText(text: "No hay productos disponibles");
@@ -570,7 +579,7 @@ class Environment{
         String texto=await Environment().downloadExcelCliente(listaCliente: lista );
         BotToast.showNotification(
         leading: (_)=>Icon(Icons.file_download),
-        title: (_)=>Text("Guardado en: "+texto)
+        title: (_)=>Text(texto)
       );
       }else{
         BotToast.showText(text: "No hay productos disponibles");

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
@@ -41,8 +42,12 @@ class _ProductoPageState extends State<ProductoPage> {
       drawer: MenuLateral(),
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.search), onPressed: (){}),
-          IconButton(icon: Icon(Icons.filter_list), onPressed: (){}),
+          IconButton(icon: Icon(Icons.search), onPressed: (){
+            BotToast.showText(text: "Proximamente busqueda");
+          }),
+          IconButton(icon: Icon(Icons.filter_list), onPressed: (){
+            BotToast.showText(text: "Proximamente Filtro");
+          }),
           Environment().mostrarPopupMenu(
             choices: Environment().choicesProducto(
               context: context,
