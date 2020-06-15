@@ -57,7 +57,7 @@ class EmpresaSelected extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.only(bottomRight: Radius.circular(50.0),topLeft: Radius.circular(50.0)),
             child:FadeInImage(placeholder: AssetImage('assets/img/logo_placeholder.png'), 
-            image:(urlImagen!=null)?NetworkImage(urlImagen):AssetImage('assets/img/logo_placeholder.png'),
+            image:(urlImagen!="")?NetworkImage(urlImagen):AssetImage('assets/img/logo_placeholder.png'),
             height: 150,
             )
           ) ,

@@ -33,45 +33,49 @@ class ContenedorPrincipal extends StatelessWidget {
           child: ListView.builder(
             physics: BouncingScrollPhysics(),
             itemBuilder: (context,index){
-              return Stack(
+              return Column(
                 children: <Widget>[
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: (snapshot.data[index].urlimagen.isNotEmpty)
-                    ?FadeInImage(placeholder: AssetImage('assets/img/silver_balls.gif'), 
-                    image: NetworkImage(snapshot.data[index].urlimagen),
-                    fit: BoxFit.cover,
-                    width: 70,)
-                    :Image(image: AssetImage('assets/img/no_product.png'),
-                    width: 70,
-                    fit: BoxFit.cover,),
-                    title: Text(snapshot.data[index].nombre.toUpperCase()),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(snapshot.data[index].descripcion),
-                        Table(
-                          children: [
-                            Environment().generarFila("Precio","\$ "+snapshot.data[index].precio.toStringAsFixed(2)),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Stack(
+                          children: <Widget>[
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: (snapshot.data[index].urlimagen.isNotEmpty)
+                              ?FadeInImage(placeholder: AssetImage('assets/img/silver_balls.gif'), 
+                              image: NetworkImage(snapshot.data[index].urlimagen),
+                              fit: BoxFit.cover,
+                              width: 70,)
+                              :Image(image: AssetImage('assets/img/no_product.png'),
+                              width: 70,
+                              fit: BoxFit.cover,),
+                              title: Text(snapshot.data[index].nombre.toUpperCase()),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(snapshot.data[index].descripcion),
+                                  Table(
+                                    children: [
+                                      Environment().generarFila("Precio","\$ "+snapshot.data[index].precio.toStringAsFixed(2)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            (snapshot.data[index].isoferta==1)
+                            ?Positioned(
+                              child: Icon(Icons.offline_pin,color: Colors.red,))
+                            :Container()
                           ],
                         ),
-                      ],
-                    ),
-                    onTap: ()async{
-                      UsuarioModel usuarioModel=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
-                      if(usuarioModel.doupdate==0 && usuarioModel.dodelete==0){
-                        await Environment().mostrarAlerta(context,"Solicite permisos del administrador");
-                      }else{
-                        Navigator.of(context).pushNamed('edit_producto',arguments: snapshot.data[index]);
-                      }
-                      
-                    },
+                      ),
+                      IconButton(icon: Icon(Icons.edit), onPressed: (){
+
+                      },color: Colors.orange,)
+                    ],
                   ),
-                  (snapshot.data[index].isoferta==1)
-                  ?Positioned(
-                    right: 0,
-                    child: Icon(Icons.offline_pin,color: Colors.red,))
-                  :Container()
+                  Divider(),
                 ],
               );
             },

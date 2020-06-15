@@ -302,34 +302,23 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           barrierDismissible: false,
           builder: (context){
             return AlertDialog(
-              content: Container(
-                height: MediaQuery.of(context).size.height*.25,
-                child: Column(
-                  children: <Widget>[
-                    Text("Seleccione el codigo postal"),
-                    Container(
-                      height: MediaQuery.of(context).size.height*.2,
-                      child: ListView.builder(
-                        itemBuilder: (context,index){
-                          return ListTile(
-                            leading: Icon(FontAwesomeIcons.city),
-                            title: Text(codigoPostal[index].codigoPostal),
-                            subtitle: Text(codigoPostal[index].pais),
-                            onTap: (){
-                              Navigator.of(context).pop();
-                              cp=codigoPostal[index].codigoPostal;
-                              txtCodigoPostal.text=codigoPostal[index].codigoPostal;
-                              setState(() {
-                              });
-                            },
-                          );
-                        },
-                        itemCount: codigoPostal.length,
-                        ),
-                    ),
-                  ],
+              content: ListView.builder(
+                itemBuilder: (context,index){
+                  return ListTile(
+                    leading: Icon(FontAwesomeIcons.city),
+                    title: Text(codigoPostal[index].codigoPostal),
+                    subtitle: Text(codigoPostal[index].pais),
+                    onTap: (){
+                      Navigator.of(context).pop();
+                      cp=codigoPostal[index].codigoPostal;
+                      txtCodigoPostal.text=codigoPostal[index].codigoPostal;
+                      setState(() {
+                      });
+                    },
+                  );
+                },
+                itemCount: codigoPostal.length,
                 ),
-              ),
             );
           }
         );
@@ -522,12 +511,12 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 create_at: DateTime.now().toIso8601String(),
                 departamento: this.departamento,
                 municipio: this.municipio,
-                url_imagen: await empresaProvider.subirImagen(foto),
+                url_imagen: (foto!=null)?await empresaProvider.subirImagen(foto):"",
                 upload_at: "",
                 isdomicilio: Environment().parseEntero(this.isdelivery),
               );
-              valor=await empresaProvider.
-              ingresarEmpresa(empresaModel);
+              valor=await empresaProvider.ingresarEmpresa(empresaModel);
+              await Environment().mostrarAlerta(context, "Guardado con exito");
               PreferenciasUsuario prefs=PreferenciasUsuario();
               var usr=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
               

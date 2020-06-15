@@ -53,7 +53,7 @@ class DBProvider{
   }
   initDB() async{
     Directory directory=await getApplicationDocumentsDirectory();
-    final path=join(directory.path,"manttoDB1.db");
+    final path=join(directory.path,"manttoDB2.db");
     return await openDatabase(
       path,
       version: 1,
@@ -383,5 +383,10 @@ class DBProvider{
     return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
                         :[];
   }
+
+  // Future<List<ProductoModel>> buscarProducto(String query)async{
+  //   final db=await database;
+  //   final
+  // }
 
 }

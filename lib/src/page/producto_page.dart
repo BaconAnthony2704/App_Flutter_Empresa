@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
+import 'package:mantenimiento_empresa/src/page/menu/search_delegate_producto.dart';
 import 'package:mantenimiento_empresa/src/page/producto/contenedor_principal.dart';
 import 'package:mantenimiento_empresa/src/page/producto/contenedor_principal_promocion.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
@@ -43,7 +44,8 @@ class _ProductoPageState extends State<ProductoPage> {
       appBar: AppBar(
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search), onPressed: (){
-            BotToast.showText(text: "Proximamente busqueda");
+            //BotToast.showText(text: "Proximamente busqueda");
+            showSearch(context: context, delegate: DataSearchProducto());
           }),
           IconButton(icon: Icon(Icons.filter_list), onPressed: (){
             BotToast.showText(text: "Proximamente Filtro");

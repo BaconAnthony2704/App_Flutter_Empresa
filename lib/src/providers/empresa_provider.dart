@@ -34,7 +34,7 @@ class EmpresaProvider with ChangeNotifier{
     }
   }
 
-  ingresarEmpresa(EmpresaModel empresaModel)async{
+  Future<int> ingresarEmpresa(EmpresaModel empresaModel)async{
     int crear;
     crear=await DBProvider.db.crearEmpresa(empresaModel);
     notifyListeners();
