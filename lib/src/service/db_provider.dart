@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_model.dart';
@@ -407,6 +408,24 @@ class DBProvider{
     final db=await database;
     final res=await db.update(tabla_cliente,cliente.toJson(),where: "${columna_cliente[0]}=?",whereArgs: [cliente.idcliente]);
     return res;
+  }
+
+  Future<List<CategoriaModel>> obtenerCategorias()async{
+
+    final db=await database;
+    final res=await db.query(tabla_producto,columns: ["${columna_producto[9]}"],groupBy: "${columna_producto[9]}");
+    return res.isNotEmpty?res.map((categoria) => CategoriaModel.fromJson(categoria)).toList()
+    :[];
+  }
+
+  Future<List<ProductoModel>> filterToCategory(int idEmpresa,String filtro)async{
+    /*columna_producto=["idproducto","nombre","precio","urlimagen","isoferta","idempresa",
+    "descripcion","activo","tipo","categoria","cantidad","create_at","upload_at"] */
+    final db=await database;
+    final res=await db.query(tabla_producto,
+    where: "${columna_producto[5]}=? AND ${columna_producto[9]} LIKE ?",whereArgs: [idEmpresa,"%${filtro}%"]);
+    return res.isNotEmpty?res.map((producto) => ProductoModel.fromJson(producto)).toList()
+                        :[];
   }
 
 }

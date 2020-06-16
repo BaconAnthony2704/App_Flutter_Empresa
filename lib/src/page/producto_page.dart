@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
 import 'package:mantenimiento_empresa/src/page/menu/search_delegate_producto.dart';
@@ -45,15 +46,48 @@ class _ProductoPageState extends State<ProductoPage> {
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search), onPressed: (){
             //BotToast.showText(text: "Proximamente busqueda");
+            productoModel.filterP=null;
             showSearch(context: context, delegate: DataSearchProducto());
           }),
-          (productoModel.consultaP!=null)?IconButton(icon: Icon(Icons.close), onPressed: (){
+          (productoModel.consultaP!=null)
+          ?IconButton(icon: Icon(Icons.close), onPressed: (){
             productoModel.consultaP=null;
             productoModel.notifyListeners();
           })
           :Container(),
-          IconButton(icon: Icon(Icons.filter_list), onPressed: (){
-            BotToast.showText(text: "Proximamente Filtro");
+          IconButton(icon: Icon(Icons.filter_list), onPressed: ()async{
+            await BotToast.showNotification(
+              duration: Duration(seconds: 5),
+              title: (_){
+                return FutureBuilder<List<CategoriaModel>>(
+                  future: productoModel.obtenerCategorias(),
+                  builder: (context,snapshot){
+                    if(!snapshot.hasData){
+                      return Center(child: CircularProgressIndicator(),);
+                    }
+                    if(snapshot.data.length==0){
+                      return Center(child: Text("No hay categoria disponibles"),);
+                    }
+                    return Container(
+                      height: 100.0,
+                      child: ListView.builder(
+                        itemBuilder: (context,index){
+                          return ListTile(
+                            title: Text(snapshot.data[index].categoria),
+                            onTap: (){
+                              productoModel.consultaP=null;
+                              productoModel.filterP=snapshot.data[index].categoria;
+                              productoModel.notifyListeners();
+                            },
+                          );
+                        },
+                        itemCount: snapshot.data.length,
+                      ),
+                    );
+                  },
+                );
+              }
+            );
           }),
           Environment().mostrarPopupMenu(
             choices: Environment().choicesProducto(

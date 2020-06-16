@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/service/db_provider.dart';
 import 'package:mime_type/mime_type.dart';
@@ -9,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 class ProductoProvider with ChangeNotifier{
   String consultaP;
+  String filterP;
   ProductoProvider();
 
   Future<int> insertarProducto(ProductoModel productoModel)async{
@@ -68,5 +70,16 @@ class ProductoProvider with ChangeNotifier{
 
   }
 
+  Future<List<CategoriaModel>> obtenerCategorias()async{
+    List<CategoriaModel> lista=await DBProvider.db.obtenerCategorias();
+    return lista;
+
+  }
+
+  Future<List<ProductoModel>> filtrarPorCategoria(int idEmpresa,String filtro)async{
+    filterP=filtro;
+    List<ProductoModel> lista=await DBProvider.db.filterToCategory(idEmpresa, filtro);
+    return lista;
+  }
   
 }
