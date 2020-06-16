@@ -3,6 +3,7 @@ import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_model.dart';
+import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/rol_model.dart';
 import 'package:mantenimiento_empresa/src/models/usuario_model.dart';
@@ -428,4 +429,23 @@ class DBProvider{
                         :[];
   }
 
+  Future<List<FormaPagoModel>> obtenerPayment()async{
+    /*columna_cliente=["idcliente","nombre","apellido","email","telefono","limite_credito",
+    "forma_pago","activo","idempresa","celular","telefono_oficina"];*/
+    final db=await database;
+    final res=await db.query(tabla_cliente,columns: ["${columna_cliente[6]}"],
+    groupBy: "${columna_cliente[6]}");
+    return res.isNotEmpty?res.map((pago) => FormaPagoModel.fromJson(pago)).toList()
+    :[];
+  }
+
+  Future<List<ClienteModel>> filterToPayment(int idEmpresa,String filter)async{
+    final db=await database;
+    final res=await db.query(tabla_cliente,where: "${columna_cliente[8]}=? AND ${columna_cliente[6]} LIKE ?",
+    whereArgs: [idEmpresa,"%${filter}%"]);
+    return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
+    :[];
+  }
+
+  
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
+import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
 import 'package:mantenimiento_empresa/src/page/menu/search_delegate_cliente.dart';
 import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
@@ -18,14 +19,50 @@ class ClienteHomePage extends StatelessWidget {
       appBar: AppBar(
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search), onPressed: (){
+            clienteProvider.filterC=null;
             showSearch(context: context, delegate: DataSearchCliente());
           }),
-          (clienteProvider.consultaP!=null)?IconButton(icon: Icon(Icons.close), onPressed: (){
+          (clienteProvider.consultaP!=null || clienteProvider.filterC!=null)
+          ?IconButton(icon: Icon(Icons.close), onPressed: (){
             clienteProvider.consultaP=null;
+            clienteProvider.filterC=null;
             clienteProvider.notifyListeners();
           })
           :Container(),
-          IconButton(icon: Icon(Icons.filter_list), onPressed: (){}),
+          IconButton(icon: Icon(Icons.filter_list), onPressed: ()async{
+            await BotToast.showNotification(
+              duration: Duration(seconds: 5),
+              title: (_){
+                return FutureBuilder<List<FormaPagoModel>>(
+                  future: clienteProvider.obtenerFormaPago(),
+                  builder: (context,snapshot){
+                    if(!snapshot.hasData){
+                      return Center(child: CircularProgressIndicator(),);
+                    }
+                    if(snapshot.data.length==0){
+                      return Center(child: Text("No hay forma de pago disponible"),);
+                    }
+                    return Container(
+                      height: 120.0,
+                      child: ListView.builder(
+                        itemBuilder: (context,index){
+                          return ListTile(
+                            leading: Icon(Icons.filter_list),
+                            title: Text(snapshot.data[index].forma_pago),
+                            onTap: (){
+                              clienteProvider.filterC=snapshot.data[index].forma_pago;
+                              clienteProvider.notifyListeners();
+                            },
+                          );
+                        },
+                        itemCount: snapshot.data.length,
+                      ),
+                    );
+                  },
+                );
+              }
+            );
+          }),
           Environment().mostrarPopupMenu(choices: Environment().choicesCliente(
             context: context,
             clienteProvider: clienteProvider,
@@ -39,7 +76,10 @@ class ClienteHomePage extends StatelessWidget {
         height: double.infinity,
         margin: Environment().metMargen5All,
         child: FutureBuilder<List<ClienteModel>>(
-          future:(clienteProvider.consultaP==null)? clienteProvider.mostrarClientes(idempresa)
+          future:(clienteProvider.consultaP==null && clienteProvider.filterC==null)
+          ? clienteProvider.mostrarClientes(idempresa)
+          :(clienteProvider.filterC!=null)
+          ?clienteProvider.filtrarPorFormaPago(idempresa, clienteProvider.filterC)
           :clienteProvider.buscarCliente(idempresa, clienteProvider.consultaP),
           builder: (context,snapshot){
             if(!snapshot.hasData){

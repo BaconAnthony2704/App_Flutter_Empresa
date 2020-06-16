@@ -49,9 +49,10 @@ class _ProductoPageState extends State<ProductoPage> {
             productoModel.filterP=null;
             showSearch(context: context, delegate: DataSearchProducto());
           }),
-          (productoModel.consultaP!=null)
+          (productoModel.consultaP!=null || productoModel.filterP!=null)
           ?IconButton(icon: Icon(Icons.close), onPressed: (){
             productoModel.consultaP=null;
+            productoModel.filterP=null;
             productoModel.notifyListeners();
           })
           :Container(),
@@ -69,7 +70,7 @@ class _ProductoPageState extends State<ProductoPage> {
                       return Center(child: Text("No hay categoria disponibles"),);
                     }
                     return Container(
-                      height: 100.0,
+                      height: 120.0,
                       child: ListView.builder(
                         itemBuilder: (context,index){
                           return ListTile(
