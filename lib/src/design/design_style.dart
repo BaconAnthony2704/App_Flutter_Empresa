@@ -513,12 +513,12 @@ class Environment{
       }
       
     }),
-    CustomPopupMenu(title: "Exportar",icono: FontAwesomeIcons.fileExcel, 
+    CustomPopupMenu(title: "Importar",icono: FontAwesomeIcons.fileExcel, 
     funcion: ()async{
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed('upload_producto');
     }),
-    CustomPopupMenu(title:"Importar", icono: FontAwesomeIcons.cloudDownloadAlt,
+    CustomPopupMenu(title:"Exportar", icono: FontAwesomeIcons.cloudDownloadAlt,
     funcion: ()async{
       Navigator.of(context).pop();
       EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
@@ -582,12 +582,12 @@ class Environment{
       }
       
     }),
-    CustomPopupMenu(title: "Exportar",icono: FontAwesomeIcons.fileExcel, 
+    CustomPopupMenu(title: "Importar",icono: FontAwesomeIcons.fileExcel, 
     funcion: ()async{
       Navigator.of(context).pop();
       Navigator.of(context).pushNamed('upload_cliente');
     }),
-    CustomPopupMenu(title:"Importar", icono: FontAwesomeIcons.cloudDownloadAlt,
+    CustomPopupMenu(title:"Exportar", icono: FontAwesomeIcons.cloudDownloadAlt,
     funcion: ()async{
       Navigator.of(context).pop();
       EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
