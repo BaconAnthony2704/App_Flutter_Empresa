@@ -83,7 +83,7 @@ class _UploadClienteState extends State<UploadCliente> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).textSelectionColor,
-        child: Icon(FontAwesomeIcons.fileArchive),
+        child: Icon(FontAwesomeIcons.fileExport),
         onPressed: ()async{
           file=await FilePicker.getFile(
             type: FileType.custom,

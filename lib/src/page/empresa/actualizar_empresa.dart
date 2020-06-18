@@ -44,6 +44,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     // TODO: implement initState
     super.initState();
     empresaModel=new EmpresaModel();
+    
   }
   
 
@@ -61,8 +62,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       empresaModel.url_imagen=_imagenUrl;
       empresaModel.create_at=DateTime.now().toIso8601String();
     }else{
-      txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: _direccion)).value;
-        txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
+      
       //Editar la empresa
       // // empresaModel=new EmpresaModel(
       // //   activo: empresaData.activo,
@@ -102,7 +102,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       empresaModel.url_imagen=empresaData.url_imagen;
       empresaModel.upload_at=DateTime.now().toIso8601String();
     }
-    return Scaffold(
+    final scafold= Scaffold(
       key: scafoldkey,
       appBar: AppBar(
         actions: <Widget>[
@@ -185,6 +185,8 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         ),
       ),
     );
+
+    return scafold;
   }
 
   Widget crearLogo() {
@@ -471,7 +473,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       onChanged: (valor){
         setState(() {
         
-        txtDireccion.text=valor;
+        _direccion=txtDireccion.text;
         _direccion=valor;
          print(_direccion);
         });
@@ -661,7 +663,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     }
     
     (_giro!="")?empresaModel.giro=txtGiro.text:_giro;
-    (txtDireccion.text.isNotEmpty)?empresaModel.direccion=txtDireccion.text:_direccion;
+    (txtDireccion.text.isEmpty)?empresaModel.direccion=_direccion:empresaModel.direccion=txtDireccion.text;
     (_departamento!="")?empresaModel.departamento=txtDepartamento.text:_departamento;
     (_municipio!="")?empresaModel.municipio=txtMunicipio.text:_municipio;
     formKey.currentState.save();
@@ -748,4 +750,5 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     }
     });
   }
+
 }

@@ -328,7 +328,7 @@ class _EditClientePageState extends State<EditClientePage> {
     print(cliente.celular);
     print(cliente.telefono_oficina);
     print(cliente.limite_credito);
-    print((cliente.forma_pago==null)?_pago:texto.text);
+    print((texto.text.isEmpty)?_pago:texto.text);
     setState(() {
       _guardando=true;
     });
@@ -336,13 +336,13 @@ class _EditClientePageState extends State<EditClientePage> {
       //Agregar cliente
       accion="Guardado";
       cliente.idempresa=empresaProvider.idempresa;
-      (cliente.forma_pago==null)?cliente.forma_pago=_pago:cliente.forma_pago=texto.text;
+      (texto.text.isEmpty)?cliente.forma_pago=_pago:cliente.forma_pago=texto.text;
       clienteProvider.ingresarCliente(cliente);
       clienteProvider.notifyListeners();
     }else{
       accion="Actualizado";
       //Actualizar cliente
-      (cliente.forma_pago==null)?cliente.forma_pago=_pago:cliente.forma_pago=texto.text;
+      (texto.text.isEmpty)?null:cliente.forma_pago=texto.text;
       clienteProvider.actualizarCliente(cliente);
       clienteProvider.notifyListeners();
     }

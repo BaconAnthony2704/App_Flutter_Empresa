@@ -23,7 +23,7 @@ class MiEmpresaPage extends StatelessWidget {
             bool estado=await Environment().confirmar(context, "Actualizar", "Desea actualizar");
             if(estado){
               //Actualizar
-              EmpresaModel empresaModel=await empresaProvider.obtenerEmpresa();
+              EmpresaModel empresaModel=await empresaProvider.obtenerEmpresaFi();
               Navigator.of(context).pushNamed('actualizar_empresa',arguments: empresaModel);
             }
           })
