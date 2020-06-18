@@ -3,105 +3,106 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/codigo_postal.dart';
 import 'package:mantenimiento_empresa/src/models/departamento_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
-import 'package:mantenimiento_empresa/src/models/municipio_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/usuario_provider.dart';
-import 'package:mantenimiento_empresa/src/providers/valida_bloc.dart';
 import 'package:mantenimiento_empresa/src/service/departamento_service.dart';
 import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
-
 class ActualizarEmpresa extends StatefulWidget {
   @override
   _ActualizarEmpresaState createState() => _ActualizarEmpresaState();
 }
 
 class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
-  //["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio","activo"];
-  String nombre,nit,telefono,email,direccion,giro,departamento,municipio;
-  String cp;
-  String opcionSel,depaSel,muniSel;
-  List<String> giros;
-  bool isFavorite=false,isdelivery=false,isdomicilio;
-  String interfaz="Actualizar Empresa";
-  int index,idempresa;
-  Position _currentPosition;
-  List<CodigoPostal> codigoPostal=new CodigoPostal().obtenerListaCodigoPostal();
-  TextEditingController txtCodigoPostal, textNombre,txtNit,txtTelefono,txtEmail,txtDireccion,txtGiro,txtDepartamento,txtMunicipio;
+  final formKey=GlobalKey<FormState>();
+  final scafoldkey=GlobalKey<ScaffoldState>();
+  EmpresaModel empresaModel;
+  bool _guardando=false,domicilio=false;
   File foto;
-
+  String _postal;
+  String _direccion,_departamento,_municipio,_giro,_imagenUrl;
+  List<CodigoPostal> codigoPostal;
+  TextEditingController txtCodigoPostal=new TextEditingController();
+  TextEditingController txtDireccion=new TextEditingController();
+  TextEditingController txtDepartamento=new TextEditingController();
+  TextEditingController txtMunicipio=new TextEditingController();
+  TextEditingController txtGiro=new TextEditingController();
+  Position _currentPosition;
+  EmpresaModel empresaData;
+  List<String> giros=["Comida","Servicios","Fabricacion","Construccion","Fab de Camisas","Tecnologia","Electronica"];
+  EmpresaProvider empresaProvider;
+  PreferenciasUsuario prefs=PreferenciasUsuario();
+  UsuarioProvider usuarioProvider;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    nombre="";
-    nit="";
-    telefono="";
-    email="";
-    direccion="";
-    giro="";
-    depaSel="San Salvador";
-    muniSel="San Salvador SS";
-    opcionSel="Seleccione";
-    giros=["Seleccione","Comida","Servicios","Fabricacion","Construccion","Fab de Camisas","Tecnologia","Electronica"];
-    //codigoPostal=[new CodigoPostal(idCodigo: 1,codigoPostal: "+503",pais: "El Salvador"),];
-    textNombre=new TextEditingController();
-    txtNit=new TextEditingController();
-    txtTelefono=new TextEditingController();
-    txtEmail=new TextEditingController();
-    txtDireccion=new TextEditingController();
-    txtGiro=new TextEditingController();
-    txtDepartamento=new TextEditingController();
-    txtMunicipio=new TextEditingController();
-    txtCodigoPostal=new TextEditingController();
-    isdomicilio=false;
+    empresaModel=new EmpresaModel();
   }
+  
+
+
   @override
   Widget build(BuildContext context) {
-    DepartamentoProvider departamentoProvider=Provider.of<DepartamentoProvider>(context);
-    EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
-    UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
-    EmpresaModel empresa=ModalRoute.of(context).settings.arguments;
+    empresaData=ModalRoute.of(context).settings.arguments;
     Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
-    ValidaBloc bloc=Provider.of<ValidaBloc>(context);
-    if(empresa==null){
-      interfaz="Nueva Empresa";
+    DepartamentoProvider departamentoProvider=Provider.of<DepartamentoProvider>(context);
+    empresaProvider=Provider.of<EmpresaProvider>(context);
+    usuarioProvider=Provider.of<UsuarioProvider>(context);
+    codigoPostal=new CodigoPostal().obtenerListaCodigoPostal();
+    if(empresaData==null){
+      //empresaModel=new EmpresaModel();
+      empresaModel.create_at=DateTime.now().toIso8601String();
     }else{
-      idempresa=empresa.idempresa;
-      /*Nombre */
-      textNombre.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.nombre)).value;
-      textNombre.selection=TextSelection.fromPosition(TextPosition(offset: textNombre.text.length));
-      /*Nit */
-      txtNit.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.nit)).value;
-      txtNit.selection=TextSelection.fromPosition(TextPosition(offset: txtNit.text.length));
-      /*Telefono */
-      txtTelefono.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.telefono)).value;
-      txtTelefono.selection=TextSelection.fromPosition(TextPosition(offset: txtTelefono.text.length));
-      /*Email */
-      txtEmail.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.email)).value;
-      txtEmail.selection=TextSelection.fromPosition(TextPosition(offset: txtEmail.text.length));
-      /*Descripcion */
-      // txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: empresa.direccion)).value;
-      // txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
-      /*Departamento */
-      // txtDepartamento.value=new TextEditingController.fromValue(new TextEditingValue(text: depaSel)).value;
-      // txtDepartamento.selection=TextSelection.fromPosition(TextPosition(offset: txtDepartamento.text.length));
-      /*Municipio */
-      // txtMunicipio.value=new TextEditingController.fromValue(new TextEditingValue(text: muniSel)).value;
-      // txtMunicipio.selection=TextSelection.fromPosition(TextPosition(offset: txtMunicipio.text.length));
+      //Editar la empresa
+      // // empresaModel=new EmpresaModel(
+      // //   activo: empresaData.activo,
+      // //   create_at: empresaData.create_at,
+      // //   data_facturacion: empresaData.data_facturacion,
+      // //   departamento: empresaData.data_facturacion,
+      // //   direccion: empresaData.direccion,
+      // //   email: empresaData.email,
+      // //   giro: empresaData.giro,
+      // //   idempresa: empresaData.idempresa,
+      // //   isdomicilio: empresaData.isdomicilio,
+      // //   municipio: empresaData.municipio,
+      // //   nit: empresaData.nit,
+      // //   nombre: empresaData.nombre,
+      // //   nombre_comercial: empresaData.nombre_comercial,
+      // //   nrc: empresaData.nrc,
+      // //   telefono: empresaData.telefono,
+      // //   url_imagen: empresaData.url_imagen,
+      // //   upload_at: DateTime.now().toIso8601String(),
+
+      // );
+      empresaModel.activo=empresaData.activo;
+      empresaModel.create_at=empresaData.create_at;
+      empresaModel.data_facturacion=empresaData.data_facturacion;
+      empresaModel.departamento=empresaData.departamento;
+      empresaModel.municipio=empresaData.municipio;
+      empresaModel.direccion=empresaData.direccion;
+      empresaModel.email=empresaData.email;
+      empresaModel.giro=empresaData.giro;
+      empresaModel.idempresa=empresaData.idempresa;
+      empresaModel.isdomicilio=empresaData.isdomicilio;
+      empresaModel.nit=empresaData.nit;
+      empresaModel.nombre=empresaData.nombre;
+      empresaModel.nombre_comercial=empresaData.nombre_comercial;
+      empresaModel.nrc=empresaData.nrc;
+      empresaModel.telefono=empresaData.telefono;
+      empresaModel.url_imagen=empresaData.url_imagen;
+      empresaModel.upload_at=DateTime.now().toIso8601String();
     }
-    
-        //depaSel=snapshot.data.first.nombre;
-        return Scaffold(
-        appBar: AppBar(
-          title: Text(interfaz),
-          actions: <Widget>[
+    return Scaffold(
+      key: scafoldkey,
+      appBar: AppBar(
+        actions: <Widget>[
             IconButton(icon: Icon(FontAwesomeIcons.camera), onPressed: ()async{
               await _tomarFoto();
             }),
@@ -109,64 +110,82 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               await _seleccionarFoto();
             })
           ],
-        ),
-        body: Container(
-          margin: Environment().metMargen5All,
-          child: ListView(
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(15.0),
+        child: Form(
+          key: formKey,
+          child: Column(
             children: <Widget>[
               Row(
-                children: <Widget>[
-                  Expanded(
-                    child:crearLogo(empresaModel: empresa) 
-                  ),
-                  Container(
-                      width: MediaQuery.of(context).size.width*.40,
-                      padding: EdgeInsets.symmetric(horizontal: 10.0),
-                      child: _crearSwitch(icono: Icons.motorcycle,subtitulo: "Domicilio",bandera: 2,estado:Environment().parseEntero(this.isdomicilio)))
-                ],
-              ),
-              Divider(),
-              _crearNombre(bloc),
-              Divider(),
-                _crearNit(bloc),
-                Divider(),
-                Row(
                   children: <Widget>[
-                    Container(
-                      width: MediaQuery.of(context).size.width*.2,
-                      child: _crearCodigoPostal()
+                    Expanded(
+                      child:GestureDetector(
+                        child: crearLogo(),
+                        onTap: (){
+                          empresaModel.url_imagen+="";
+                          setState(() {
+                            
+                          });
+                        },
+                      ) 
                     ),
-                    Expanded(child: _crearTelefono(bloc)),
+                    Container(
+                        width: MediaQuery.of(context).size.width*.40,
+                        padding: EdgeInsets.symmetric(horizontal: 10.0),
+                        child: _crearSwitch(icono: Icons.motorcycle,subtitulo: "Domicilio",
+                        bandera: 2,estado:Environment().parseEntero(this.domicilio)
+                      ),
+                    )
                   ],
                 ),
-                _crearGiro(giro),
                 Divider(),
-                _crearEmail(bloc),
-                
+                _crearNombre(),
+                Divider(),
+                _crearNombreComercial(),
+                Divider(),
+                _crearNit(),
+                Divider(),
+                _crearNRC(),
+                Divider(),
+                _crearGiro(),
+                Divider(),
+                Row(
+                    children: <Widget>[
+                      Container(
+                        width: MediaQuery.of(context).size.width*.2,
+                        child: _crearCodigoPostal()
+                      ),
+                      Expanded(child: _crearTelefono()),
+                    ],
+                  ),
+                Divider(),
+                _crearEmail(),
                 Divider(),
                 _crearDireccion(geolocator),
                 Divider(),
                 Row(
-                  children: <Widget>[
-                    Expanded(child: _crearDepartamento(departamentoProvider)),
-                    (departamentoProvider.progreso)?Expanded(child: _crearMunicipio(departamentoProvider))
-                    :(departamentoProvider.listaMunicipios.length>=0)?Container()
-                    :CircularProgressIndicator(),
-                  ],
-                ),
-                
+                    children: <Widget>[
+                      Expanded(child: _crearDepartamento(departamentoProvider)),
+                      (departamentoProvider.progreso)?Expanded(child: _crearMunicipio(departamentoProvider))
+                      :(departamentoProvider.listaMunicipios.length>=0)?Container()
+                      :CircularProgressIndicator(),
+                    ],
+                  ),
                 Divider(),
-                _crearBoton(context,empresaProvider,idempresa,bloc,empresa,usuarioProvider)
+                _crearDataFacturacion(),
+                Divider(),
+                _crearBoton(),
+                
             ],
           ),
         ),
-        
-      );
-      
+      ),
+    );
   }
 
-  Widget crearLogo({EmpresaModel empresaModel=null}) {
-    if(empresaModel!=null){
+  Widget crearLogo() {
+    if(empresaModel.url_imagen!=null && empresaModel.url_imagen!=""){
       return Container(
         height: 180,
         child: ClipRRect(
@@ -210,11 +229,34 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       ),
     );
   }
-  Widget _crearNombre(ValidaBloc bloc) {
-    return StreamBuilder<String>(
-      stream: bloc.nombreEmpresaStream,
-      builder: (context,snapshot){
-        return TextFormField(
+
+  Widget _crearSwitch({String subtitulo,IconData icono,int bandera,int estado}) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icono),
+      title: Switch(value: domicilio, 
+      onChanged: (valor){
+        setState(() {
+          switch(bandera){
+            case 1:
+            domicilio=valor;
+            break;
+            case 2:
+            estado=Environment().parseEntero(valor);
+            //isdelivery=false;
+            domicilio=valor;
+            print(estado);
+            break;
+          }
+        });
+      }),
+      subtitle: Text(subtitulo),
+    );
+  }
+
+  Widget _crearNombre() {
+
+    return TextFormField(
           autofocus: false,
           textCapitalization: TextCapitalization.sentences,
           decoration: InputDecoration(
@@ -223,26 +265,46 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             ),
             hintText: "Nombre de la empresa",
             labelText: "Empresa",
-            errorText: snapshot.error,
-            suffixIcon: IconButton(onPressed: (){
-              setState(() {
-                textNombre.text="";
-              });
-            }, icon: Icon(Icons.clear)),
-            
           ),
-          onChanged: bloc.changeNombreEmpresa,
-          initialValue: textNombre.text,
-        );
-      },
+          onSaved: (value)=>empresaModel.nombre=value,
+          initialValue: empresaModel.nombre,
+          validator: (value){
+            if(value.length<2){
+              return "Ingrese una empresa correcta";
+            }else{
+              return null;
+            }
+          },
     );
   }
 
-  Widget _crearNit(ValidaBloc bloc) {
-    return StreamBuilder<String>(
-      stream: bloc.nitStream,
-      builder: (context,snapshot){
-        return TextFormField(
+  Widget _crearNombreComercial() {
+
+    return TextFormField(
+          autofocus: false,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Nombre de la empresa comercial",
+            labelText: "Nombre comercial",
+          ),
+          onSaved: (value)=>empresaModel.nombre_comercial=value,
+          initialValue: empresaModel.nombre_comercial,
+          validator: (value){
+            if(value.length<2){
+              return "Ingrese una empresa comercial correcta";
+            }else{
+              return null;
+            }
+          },
+    );
+  }
+  
+  Widget _crearNit() {
+    
+      return TextFormField(
           autofocus: false,
           keyboardType: TextInputType.number,
           textCapitalization: TextCapitalization.sentences,
@@ -253,18 +315,14 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             hintText: "Identificacion tributaria",
             labelText: "Identiticacion tributaria",
           ),
-          initialValue: txtNit.text,
-          onChanged: bloc.changeNit,
-        );
-      }
+          initialValue: empresaModel.nit,
+          onSaved: (value)=>empresaModel.nit=value,
     );
   }
 
-  Widget _crearTelefono(ValidaBloc bloc) {
-    return StreamBuilder<String>(
-      stream: bloc.telefonoStream,
-      builder: (context,snapshot){
-        return TextFormField(
+  Widget _crearNRC() {
+    
+      return TextFormField(
           autofocus: false,
           keyboardType: TextInputType.number,
           textCapitalization: TextCapitalization.sentences,
@@ -272,20 +330,16 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20.0),
             ),
-            hintText: "Telefono",
-            labelText: "Telefono",
-            errorText: snapshot.error,
+            hintText: "Numero de registro de contribuyente",
+            labelText: "N.R.C.",
           ),
-          initialValue: txtTelefono.text,
-          maxLength: 15,
-          onChanged: bloc.changeTelefono,
-        );
-      }
+          initialValue: empresaModel.nrc,
+          onSaved: (value)=>empresaModel.nrc=value,
     );
   }
 
   Widget _crearCodigoPostal() {
-    return TextField(
+    return TextFormField(
       decoration: InputDecoration(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0)
@@ -310,9 +364,9 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                     subtitle: Text(codigoPostal[index].pais),
                     onTap: (){
                       Navigator.of(context).pop();
-                      cp=codigoPostal[index].codigoPostal;
-                      txtCodigoPostal.text=codigoPostal[index].codigoPostal;
                       setState(() {
+                        _postal=codigoPostal[index].codigoPostal;
+                        txtCodigoPostal.text=_postal;
                       });
                     },
                   );
@@ -323,14 +377,41 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           }
         );
       },
+      initialValue: (_postal=="")?"+503":null,
       controller: txtCodigoPostal,
     );
   }
-  Widget _crearEmail(ValidaBloc bloc) {
-    return StreamBuilder<String>(
-      stream: bloc.emailStream,
-      builder:(context,snapshot){
-        return TextFormField(
+
+  Widget _crearTelefono() {
+    
+      return TextFormField(
+          autofocus: false,
+          keyboardType: TextInputType.number,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Telefono",
+            labelText: "Telefono",
+          ),
+          initialValue: empresaModel.telefono,
+          maxLength: 15,
+          onSaved: (value)=>empresaModel.telefono=value,
+          validator: (value){
+            if(value.length<8){
+              return "Ingrese el telefono completo";
+            }
+            else{
+              return null;
+            }
+          },
+    );
+  }
+
+  Widget _crearEmail() {
+    
+      return TextFormField(
           autofocus: false,
           keyboardType: TextInputType.emailAddress,
           textCapitalization: TextCapitalization.sentences,
@@ -341,67 +422,23 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
             hintText: "Email",
             labelText: "Email",
             suffixIcon: Icon(Icons.alternate_email),
-            errorText: snapshot.error
           ),
           
-          maxLength: 25,
-          onChanged: bloc.changeEmail,
-          initialValue: txtEmail.text,
-        );
-      },
-    );
-  }
-
-  Widget _crearGiro(String giro) {
-    return TextFormField(
-      enableInteractiveSelection: false,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        hintText: "Giro",
-        labelText: "Giro"
-      ),
-      onTap: ()async{
-        print("Cambio");
-        FocusScope.of(context).requestFocus(new FocusNode());
-        await showDialog(context: context,
-        builder: (context)=>AlertDialog(
-          content: DropdownButton(
-            value: this.opcionSel,
-            items: _getOpcionesDropDown(), 
-            onChanged: (opt){
-              setState(() {
-                txtGiro.clear();
-                opcionSel=opt;
-                txtGiro.text=opt;
-                giro=txtGiro.text;
-                Navigator.of(context).pop();
-              });
-              
+          maxLength: 50,
+          initialValue: empresaModel.email,
+          onSaved: (value)=>empresaModel.email=value,
+          validator: (value){
+            if(value.length<10){
+              return "Ingrese un email correcto";
+            }else{
+              return null;
             }
-          ),
-        ) 
-        );
-      },
-      controller: (!txtGiro.value.text.isEmpty)?txtGiro:null,
-      initialValue: (txtGiro.value.text.isEmpty)?giro:null,
+          },
     );
-  }
-
-  List<DropdownMenuItem<String>>_getOpcionesDropDown() {
-    List<DropdownMenuItem<String>> lista=new List();
-    giros.forEach((g) {
-      lista.add(DropdownMenuItem(
-        value: g,
-        child: Text(g),
-      ));
-     });
-     return lista;
   }
 
   Widget _crearDireccion(Geolocator geolocator) {
-    return TextField(
+    return TextFormField(
       maxLines: 3,
       autofocus: false,
       textCapitalization: TextCapitalization.sentences,
@@ -409,7 +446,6 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
         ),
-        counter: Text("${txtDireccion.text.length}"),
         hintText: "Direccion",
         labelText: "Direccion",
         suffixIcon: IconButton(
@@ -417,17 +453,16 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           onPressed: ()async{
             
             try{
-              txtDireccion.clear();
+              
               _currentPosition= await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
               List<Placemark> p=await geolocator.placemarkFromCoordinates(
                 _currentPosition.latitude,_currentPosition.longitude);
                 Placemark place=p[0];
                 setState(() {
-                  direccion="${place.thoroughfare}, ${place.subThoroughfare}, ${place.locality}, ${place.country}";
-                  //txtDireccion.text=direccion;
-                  txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: direccion)).value;
+                  empresaModel.direccion="${place.thoroughfare}, ${place.subThoroughfare}, ${place.locality}, ${place.country}";
+                  txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: empresaModel.direccion)).value;
                   txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
-                  print(direccion);
+                  print(empresaModel.direccion);
                 });
             }catch(e){
               print("Error en location: $e");
@@ -437,169 +472,16 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       ),
       onChanged: (valor){
         setState(() {
-        //   txtDireccion.clear();
-        //   direccion=_currentPosition.latitude.toString();
-        //   direccion+=txtDireccion.text;
-        //  direccion=valor;
-
-        // descripcion=txtDescripcion.text;
-        // descripcion=valor;
-
-        direccion=txtDireccion.text;
-        direccion=valor;
-         print(direccion);
+        _direccion=txtDireccion.text;
+        _direccion=valor;
+         print(_direccion);
         });
       },
-     controller: txtDireccion,
+     controller: (txtDireccion.text.isNotEmpty)?txtDireccion:null,
+     initialValue: (_direccion=="")?empresaModel.direccion:null,
     );
   }
 
-  Widget _crearSwitch({String subtitulo,IconData icono,int bandera,int estado}) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icono),
-      title: Switch(value: (bandera==1)?isFavorite:isdelivery, 
-      onChanged: (valor){
-        setState(() {
-          switch(bandera){
-            case 1:
-            isFavorite=valor;
-            break;
-            case 2:
-            estado=Environment().parseEntero(valor);
-            //isdelivery=false;
-            isdelivery=valor;
-            print(estado);
-            break;
-          }
-        });
-      }),
-      subtitle: Text(subtitulo),
-    );
-  }
-
-  Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
-   int idempresa, ValidaBloc bloc, EmpresaModel empresa,UsuarioProvider usuarioProvider) {
-     String btn;
-     String urlImagen;
-     if(empresa==null){
-       btn="Ingresar";
-       if(foto==null){
-         urlImagen="";
-       }
-       return StreamBuilder<bool>(
-        stream: bloc.formValidStream,
-        builder: (context,snapshot){
-          return RaisedButton(
-            color: Theme.of(context).textSelectionColor,
-            splashColor: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: Text(btn),
-            hoverColor: Colors.green.withOpacity(0.8),
-
-            onPressed: (snapshot.hasData)
-            ?()async{
-              int valor;
-              EmpresaModel empresaModel=new EmpresaModel(
-                activo: 1,
-                nombre: bloc.nombreEmpresa,
-                nit: (bloc.nit!=null)?bloc.nit:"-",
-                telefono: (txtCodigoPostal.text.isNotEmpty)?txtCodigoPostal.text+bloc.telefono:bloc.telefono,
-                direccion: this.direccion,
-                email:bloc.email,
-                giro: this.txtGiro.text,
-                create_at: DateTime.now().toIso8601String(),
-                departamento: this.departamento,
-                municipio: this.municipio,
-                url_imagen: (foto!=null)?await empresaProvider.subirImagen(foto):"",
-                upload_at: "",
-                isdomicilio: Environment().parseEntero(this.isdelivery),
-              );
-              valor=await empresaProvider.ingresarEmpresa(empresaModel);
-              await Environment().mostrarAlerta(context, "Guardado con exito");
-              PreferenciasUsuario prefs=PreferenciasUsuario();
-              var usr=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
-              
-                usr.idempresa=valor;
-                int estado=await usuarioProvider.actualizarUsuarioEmpresa(prefs.idusuario, usr);
-                if(estado==1){
-                  BotToast.showText(text: "Actualizado");
-                  //usuarioProvider.notifyListeners();
-                  empresaProvider.obtenerEmpresaFi();
-                  empresaProvider.notifyListeners();
-                }else{
-                  BotToast.showText(text: "No se pudo actualizar");
-                }
-              
-              Navigator.pop(context);
-
-              // print(bloc.nombreEmpresa);
-              // print(bloc.email);
-              // print(bloc.nit);
-              // print(bloc.telefono);
-              // print(this.direccion);
-              // print(this.departamento);
-              // print(this.municipio);
-              // print(this.txtGiro.text);
-
-              //String urlImagen=await empresaProvider.subirImagen(foto);
-              //print(urlImagen);
-          }
-          :null,
-          );
-        }
-      );
-     }else{
-       btn="Actualizar";
-       
-          return RaisedButton(
-            color: Theme.of(context).textSelectionColor,
-            splashColor: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-            child: Text(btn),
-            hoverColor: Colors.green.withOpacity(0.8),
-            onPressed: 
-            ()async{
-              EmpresaModel empresaModel=new EmpresaModel(
-                idempresa: idempresa,
-                activo: 1,
-                nombre: bloc.nombreEmpresa,
-                nit: bloc.nit,
-                telefono: bloc.telefono,
-                direccion: this.direccion,
-                email:bloc.email,
-                giro: this.txtGiro.text,
-                create_at: "",
-                departamento: this.departamento,
-                municipio: this.municipio,
-                url_imagen: (foto==null)
-                ?empresa.url_imagen
-                :await empresaProvider.subirImagen(foto),
-                upload_at: DateTime.now().toIso8601String(),
-                isdomicilio: Environment().parseEntero(this.isdelivery),
-              );
-              int valor=await empresaProvider.
-              actualizarEmpresa(empresaModel);
-              Navigator.pop(context);
-
-              // print(bloc.nombreEmpresa);
-              // print(bloc.email);
-              // print(bloc.nit);
-              // print(bloc.telefono);
-              // print(this.direccion);
-              // print(this.departamento);
-              // print(this.municipio);
-              // print(this.txtGiro.text);
-
-              //String urlImagen=await empresaProvider.subirImagen(foto);
-              //print(urlImagen);
-          }
-          
-          );
-        
-     }
-    
-  }
   Widget _crearDepartamento(DepartamentoProvider departamentoProvider) {
     return FutureBuilder<List<DepartamentoModel>>(
       future: departamentoProvider.getCargarDepartamentos(),
@@ -610,7 +492,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         if(snapshot.data.length==0){
           return Center(child: Text("No hay departamentos"),);
         }
-        return TextField(
+        return TextFormField(
         enableInteractiveSelection: false,
         decoration: InputDecoration(
           border: OutlineInputBorder(
@@ -631,14 +513,11 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                   onTap: (){
                     setState(() {
                       departamentoProvider.obtenerMunicipios(snapshot.data[index].id);
-                      //departamentoProvider.notifyListeners();
-                      txtDepartamento.clear();
-                      txtMunicipio.clear();
-                      txtDepartamento.text=snapshot.data[index].nombre;
-                      departamento=txtDepartamento.text;
+                      empresaModel.departamento=snapshot.data[index].nombre;
+                      _departamento=empresaModel.departamento;
+                      txtDepartamento.text=_departamento;
                     });
                     Navigator.of(context).pop(true);
-                    //print(departamentoLista[index].id);
                     
                   },
                 );
@@ -648,14 +527,15 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           ) 
           );
         },
-        controller: txtDepartamento,
+        initialValue: (_departamento=="")?empresaModel.departamento:null,
+        controller: (txtDepartamento.text.isNotEmpty)?txtDepartamento:null,
       );
       },
     );
   }
 
   Widget _crearMunicipio(DepartamentoProvider departamentoProvider) {
-        return TextField(
+      return TextFormField(
         enableInteractiveSelection: false,
         decoration: InputDecoration(
           border: OutlineInputBorder(
@@ -673,9 +553,9 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 return ListTile(
                   title: Text(departamentoProvider.listaMunicipios[index].nombre),
                   onTap: (){
-                    txtMunicipio.clear();
-                    txtMunicipio.text=departamentoProvider.listaMunicipios[index].nombre;
-                    municipio=txtMunicipio.text;
+                    empresaModel.municipio=departamentoProvider.listaMunicipios[index].nombre;
+                    _municipio=empresaModel.municipio;
+                    txtMunicipio.text=_municipio;
                     setState(() {
                       
                     });
@@ -688,9 +568,165 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           ) 
           );
         },
-        controller: txtMunicipio,
+        initialValue: (_municipio=="")?empresaModel.municipio:null,
+        controller: (txtMunicipio.text.isNotEmpty)?txtMunicipio:null,
       );
       
+  }
+
+  Widget _crearGiro() {
+      return TextFormField(
+        enableInteractiveSelection: false,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          hintText: "Giro",
+          labelText: "Giro"
+        ),
+        onTap: ()async{
+          FocusScope.of(context).requestFocus(new FocusNode());
+          await showDialog(context: context,
+          builder: (context)=>AlertDialog(
+            content: ListView.builder(
+              itemBuilder: (context,index){
+                return ListTile(
+                  title: Text(giros[index]),
+                  onTap: (){
+                    empresaModel.giro=giros[index];
+                    _giro=empresaModel.giro;
+                    txtGiro.text=_giro;
+                    setState(() {
+                      
+                    });
+                    Navigator.of(context).pop(true);
+                  },
+                );
+              },
+              itemCount:giros.length,
+            ),
+          ) 
+          );
+        },
+        initialValue: (_giro=="")?empresaModel.giro:null,
+        controller: (txtGiro.text.isNotEmpty)?txtGiro:null,
+      );
+      
+  }
+
+  Widget _crearDataFacturacion() {
+
+    return TextFormField(
+          autofocus: false,
+          textCapitalization: TextCapitalization.sentences,
+          maxLines: 2,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            hintText: "Data facturacion",
+            labelText: "Data factuacion",
+          ),
+          onSaved: (value)=>empresaModel.data_facturacion=value,
+          initialValue: empresaModel.data_facturacion,
+          validator: (value){
+            if(value.length<2){
+              return "Ingrese una empresa correcta";
+            }else{
+              return null;
+            }
+          },
+    );
+  }
+
+  Widget _crearBoton(){
+    
+    return RaisedButton.icon(
+      label: Text("Guardar"),
+      icon: Icon(Icons.save),
+      onPressed: (_guardando)?null:_submit,
+    );
+  }
+
+  void _submit()async{
+    String accion;
+    if(!formKey.currentState.validate()){
+      return;
+    }
+    if(foto!=null){
+      _imagenUrl=await empresaProvider.subirImagen(foto);
+      print(_imagenUrl);
+    }else{
+      _imagenUrl="";
+    }
+    formKey.currentState.save();
+    empresaModel.giro=txtGiro.text;
+    empresaModel.direccion=txtDireccion.text;
+    empresaModel.departamento=txtDepartamento.text;
+    empresaModel.municipio=txtMunicipio.text;
+    
+    
+
+    setState(() {
+      _guardando=true;
+    });
+
+    
+    if(empresaModel.idempresa==null){
+      //Agregar empresa
+      accion="Ingresado";
+      
+      empresaModel.upload_at="";
+      empresaModel.activo=1;
+      empresaModel.url_imagen=_imagenUrl;
+      int valor=await empresaProvider.ingresarEmpresa(empresaModel);
+      var usr=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
+      usr.idempresa=valor;
+      int estado=await usuarioProvider.actualizarUsuarioEmpresa(prefs.idusuario,usr);
+      if(estado==1){
+        BotToast.showText(text: "Ingresado");
+        empresaProvider.obtenerEmpresaFi();
+        empresaProvider.notifyListeners();
+      }else{
+        BotToast.showText(text: "No se pudo actualizar");
+      }
+      
+
+      // print("Nombre: "+ empresaModel.nombre);
+      // print("Nombre comercial: "+empresaModel.nombre_comercial);
+      // print("NIT: "+empresaModel.nit);
+      // print("NRC: "+empresaModel.nrc);
+      // print("Giro: "+empresaModel.giro);
+      // print("Telefono: "+empresaModel.telefono);
+      // print("Direccion: "+empresaModel.direccion);
+      // print("Departamento: "+empresaModel.departamento);
+      // print("Municipio: "+empresaModel.municipio);
+      // print("Data Fac.: "+empresaModel.data_facturacion);
+      // print("Foto url: "+empresaModel.url_imagen);
+    }else{
+      //Actualizar empresa
+      empresaModel.url_imagen=_imagenUrl;
+      int estado=await empresaProvider.actualizarEmpresa(empresaModel);
+      if(estado==1){
+        BotToast.showText(text: "Actualizado");
+        empresaProvider.notifyListeners();
+        
+      }else{
+        BotToast.showText(text: "No se pudo actualizar");
+      }
+    }
+    setState(() {
+      _guardando=false;
+    });
+    
+    mostrarSnackbar('Registro $accion');
+  }
+
+  void mostrarSnackbar(String mensaje){
+    final snackbar=SnackBar(content: Text(mensaje),
+    duration: Duration(milliseconds: 1500),);
+    scafoldkey.currentState.showSnackBar(snackbar);
+    Navigator.pop(context);
   }
 
   void _seleccionarFoto()async{
@@ -702,15 +738,11 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
 
   _procesarImagen(ImageSource origen)async{
     foto=await ImagePicker.pickImage(source: origen,imageQuality: 75,maxHeight: 300,maxWidth: 300);
-    
+    print(foto);
     setState(() {
-      
+      if(foto!=null || empresaModel.url_imagen!=""){
+      empresaModel.url_imagen=null;
+    }
     });
   }
-
-  
-  
-
-  
-
 }

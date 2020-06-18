@@ -17,6 +17,9 @@ class EmpresaModel{
   String create_at;
   String upload_at;
   String url_imagen;
+  String nrc;
+  String nombre_comercial;
+  String data_facturacion;
 
 
   EmpresaModel({
@@ -34,6 +37,10 @@ class EmpresaModel{
     this.create_at,
     this.upload_at,
     this.url_imagen,
+    this.nrc,
+    this.nombre_comercial,
+    this.data_facturacion
+
 
   });
 
@@ -51,7 +58,10 @@ class EmpresaModel{
     municipio      : json['municipio'],
     create_at      : json['create_at'],
     upload_at      : json['upload_at'], 
-    url_imagen: json['url_imagen'],          
+    url_imagen: json['url_imagen'],
+    nrc: json['nrc'],
+    nombre_comercial: json['nombre_comercial'],
+    data_facturacion: json['data_facturacion'],            
 
   );
 
@@ -70,6 +80,10 @@ class EmpresaModel{
     "create_at":create_at,
     "upload_at":upload_at,
     "url_imagen":url_imagen,
+    "nrc":nrc,
+    "nombre_comercial":nombre_comercial,
+    "data_facturacion":data_facturacion,
+    
   };
 
 }

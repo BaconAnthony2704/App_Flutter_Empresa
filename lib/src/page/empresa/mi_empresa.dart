@@ -72,6 +72,9 @@ class MiEmpresaPage extends StatelessWidget {
             departamento: snapshot.data.departamento,
             municipio: snapshot.data.municipio,
             urlImagen: snapshot.data.url_imagen,
+            data_facturacion: snapshot.data.data_facturacion,
+            nombre_comercial: snapshot.data.nombre_comercial,
+            nrc: snapshot.data.nrc,
             telefono: snapshot.data.telefono,);
 
         },

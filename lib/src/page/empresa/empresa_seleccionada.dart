@@ -3,12 +3,14 @@ import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/providers/tema_provider.dart';
 import 'package:provider/provider.dart';
 class EmpresaSelected extends StatelessWidget {
-  String nombre,nit,giro,telefono,email,direccion,idempresa;
-  String departamento,municipio,urlImagen;
-  int domicilio;
+  final String nombre,nit,giro,telefono,email,direccion,idempresa;
+  final String departamento,municipio,urlImagen;
+  final String nrc,data_facturacion,nombre_comercial;
+  final int domicilio;
   EmpresaSelected({this.nombre="Empresa",this.departamento="-",this.municipio="-",
   this.nit="-",this.telefono="-",this.direccion="-",this.idempresa="-",this.urlImagen,
-  this.email="-",this.giro="-",this.domicilio=0});
+  this.email="-",this.giro="-",this.domicilio=0, this.nrc="-", this.data_facturacion="-",
+   this.nombre_comercial="-"});
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -26,7 +28,7 @@ class EmpresaSelected extends StatelessWidget {
       children: <Widget>[
         Container(
           width: double.infinity,
-          height: size.height*.40,
+          height: size.height*.35,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.centerRight,
@@ -71,7 +73,7 @@ class EmpresaSelected extends StatelessWidget {
    return SingleChildScrollView(
      child: Column(
        children: <Widget>[
-         SafeArea(child: Container(height: 225.0,)),
+         SafeArea(child: Container(height: 200.0,)),
          Container(
             width: size.width*.85,
             padding: EdgeInsets.symmetric(vertical: 50.0),
@@ -90,7 +92,11 @@ class EmpresaSelected extends StatelessWidget {
             ),
             child: Table(
               children: [
+                Environment().generarFila("Nombre comercial", "${this.nombre_comercial}"),
+                TableRow(children: [Divider(),Divider()]),
                 Environment().generarFila("Identificacion tributaria","${this.nit}"),
+                TableRow(children: [Divider(),Divider()]),
+                Environment().generarFila("N.R.C", "${this.nrc}"),
                 TableRow(children: [Divider(),Divider()]),
                 Environment().generarFila("Giro", "${this.giro}"),
                 TableRow(children: [Divider(),Divider()]),
@@ -104,6 +110,9 @@ class EmpresaSelected extends StatelessWidget {
                 TableRow(children: [Divider(),Divider()]),
                 Environment().generarFila("Municipio", "${this.municipio}"),
                 TableRow(children: [Divider(),Divider()]),
+                Environment().generarFila("Data facturacion", "${this.data_facturacion}"),
+                TableRow(children: [Divider(),Divider()]),
+                
                 (this.domicilio==1)
                 ?TableRow(
                   children: [

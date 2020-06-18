@@ -28,7 +28,7 @@ class DBProvider{
 
   //Columnas
   List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio",
-                                "activo","departamento","municipio","create_at","upload_at","url_imagen"];
+                                "activo","departamento","municipio","create_at","upload_at","url_imagen","nrc","nombre_comercial","data_facturacion"];
 
   List<String> columna_usuario=["idusuario","nombre","email","password","idrol","idempresa","activo",
                                 "docreate","doread","doupdate","dodelete"];
@@ -78,7 +78,10 @@ class DBProvider{
           ${columna_empresa[10]} TEXT,
           ${columna_empresa[11]} TEXT,
           ${columna_empresa[12]} TEXT,
-          ${columna_empresa[13]} TEXT
+          ${columna_empresa[13]} TEXT,
+          ${columna_empresa[14]} TEXT,
+          ${columna_empresa[15]} TEXT,
+          ${columna_empresa[16]} TEXT
           )
          ''');
          print("Tabla empresa creada");
@@ -310,7 +313,8 @@ class DBProvider{
     e.${columna_empresa[3]},e.${columna_empresa[4]}, 
     e.${columna_empresa[5]},e.${columna_empresa[6]}, e.${columna_empresa[7]},
     e.${columna_empresa[8]},e.${columna_empresa[9]},e.${columna_empresa[10]},e.${columna_empresa[11]},
-    e.${columna_empresa[12]},e.${columna_empresa[13]}        
+    e.${columna_empresa[12]},e.${columna_empresa[13]},e.${columna_empresa[14]},e.${columna_empresa[15]},
+    e.${columna_empresa[16]}       
     FROM ${tabla_empresa} AS e 
     INNER JOIN ${tabla_usuario} AS u 
     ON u.${columna_usuario[5]}=e.${columna_empresa[0]} AND u.${columna_usuario[0]}=$idusuario
