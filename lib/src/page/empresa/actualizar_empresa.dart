@@ -26,7 +26,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
   bool _guardando=false,domicilio=false;
   File foto;
   String _postal;
-  String _direccion,_departamento,_municipio,_giro,_imagenUrl;
+  String _direccion="",_departamento="",_municipio="",_giro="",_imagenUrl="";
   List<CodigoPostal> codigoPostal;
   TextEditingController txtCodigoPostal=new TextEditingController();
   TextEditingController txtDireccion=new TextEditingController();
@@ -58,8 +58,11 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
     codigoPostal=new CodigoPostal().obtenerListaCodigoPostal();
     if(empresaData==null){
       //empresaModel=new EmpresaModel();
+      empresaModel.url_imagen=_imagenUrl;
       empresaModel.create_at=DateTime.now().toIso8601String();
     }else{
+      txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: _direccion)).value;
+        txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
       //Editar la empresa
       // // empresaModel=new EmpresaModel(
       // //   activo: empresaData.activo,
@@ -167,7 +170,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 Row(
                     children: <Widget>[
                       Expanded(child: _crearDepartamento(departamentoProvider)),
-                      (departamentoProvider.progreso)?Expanded(child: _crearMunicipio(departamentoProvider))
+                      (departamentoProvider.progreso || _municipio=="")?Expanded(child: _crearMunicipio(departamentoProvider))
                       :(departamentoProvider.listaMunicipios.length>=0)?Container()
                       :CircularProgressIndicator(),
                     ],
@@ -398,14 +401,6 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
           initialValue: empresaModel.telefono,
           maxLength: 15,
           onSaved: (value)=>empresaModel.telefono=value,
-          validator: (value){
-            if(value.length<8){
-              return "Ingrese el telefono completo";
-            }
-            else{
-              return null;
-            }
-          },
     );
   }
 
@@ -459,20 +454,24 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 _currentPosition.latitude,_currentPosition.longitude);
                 Placemark place=p[0];
                 setState(() {
+                  
                   empresaModel.direccion="${place.thoroughfare}, ${place.subThoroughfare}, ${place.locality}, ${place.country}";
+                  _direccion=empresaModel.direccion;
                   txtDireccion.value=new TextEditingController.fromValue(new TextEditingValue(text: empresaModel.direccion)).value;
                   txtDireccion.selection=TextSelection.fromPosition(TextPosition(offset: txtDireccion.text.length));
                   print(empresaModel.direccion);
                 });
             }catch(e){
               print("Error en location: $e");
+              BotToast.showText(text: "No se pudo obtener la ubicacion, intente de nuevo");
             }
           },
         ),
       ),
       onChanged: (valor){
         setState(() {
-        _direccion=txtDireccion.text;
+        
+        txtDireccion.text=valor;
         _direccion=valor;
          print(_direccion);
         });
@@ -592,14 +591,17 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               itemBuilder: (context,index){
                 return ListTile(
                   title: Text(giros[index]),
-                  onTap: (){
-                    empresaModel.giro=giros[index];
-                    _giro=empresaModel.giro;
-                    txtGiro.text=_giro;
+                  onTap: (){     
+                    // empresaModel.giro=giros[index];
+                    // _giro=empresaModel.giro;
+                    // txtGiro.text=_giro;
                     setState(() {
-                      
+                      empresaModel.giro=null;
+                      _giro=giros[index];
+                      empresaModel.giro=_giro;
+                      txtGiro.text=_giro;
                     });
-                    Navigator.of(context).pop(true);
+                    Navigator.pop(context);
                   },
                 );
               },
@@ -654,18 +656,15 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       return;
     }
     if(foto!=null){
-      _imagenUrl=await empresaProvider.subirImagen(foto);
+      empresaModel.url_imagen=await empresaProvider.subirImagen(foto);
       print(_imagenUrl);
-    }else{
-      _imagenUrl="";
     }
+    
+    (_giro!="")?empresaModel.giro=txtGiro.text:_giro;
+    (txtDireccion.text.isNotEmpty)?empresaModel.direccion=txtDireccion.text:_direccion;
+    (_departamento!="")?empresaModel.departamento=txtDepartamento.text:_departamento;
+    (_municipio!="")?empresaModel.municipio=txtMunicipio.text:_municipio;
     formKey.currentState.save();
-    empresaModel.giro=txtGiro.text;
-    empresaModel.direccion=txtDireccion.text;
-    empresaModel.departamento=txtDepartamento.text;
-    empresaModel.municipio=txtMunicipio.text;
-    
-    
 
     setState(() {
       _guardando=true;
@@ -678,7 +677,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       
       empresaModel.upload_at="";
       empresaModel.activo=1;
-      empresaModel.url_imagen=_imagenUrl;
+      //empresaModel.url_imagen=_imagenUrl;
       int valor=await empresaProvider.ingresarEmpresa(empresaModel);
       var usr=await usuarioProvider.obtenerUnUsuarioParaMenu(prefs.idusuario);
       usr.idempresa=valor;
@@ -705,21 +704,25 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       // print("Foto url: "+empresaModel.url_imagen);
     }else{
       //Actualizar empresa
-      empresaModel.url_imagen=_imagenUrl;
-      int estado=await empresaProvider.actualizarEmpresa(empresaModel);
-      if(estado==1){
-        BotToast.showText(text: "Actualizado");
-        empresaProvider.notifyListeners();
+      //empresaModel.url_imagen=_imagenUrl;
+      // int estado=
+      
+      await empresaProvider.actualizarEmpresa(empresaModel);
+      empresaProvider.obtenerEmpresaFi();
+      // if(estado==1){
+      //   //BotToast.showText(text: "Actualizado");
+      empresaProvider.notifyListeners();
         
-      }else{
-        BotToast.showText(text: "No se pudo actualizar");
-      }
+      // }else{
+      //   BotToast.showText(text: "No se pudo actualizar");
+      // }
     }
     setState(() {
       _guardando=false;
     });
     
     mostrarSnackbar('Registro $accion');
+   // Navigator.pop(context);
   }
 
   void mostrarSnackbar(String mensaje){
