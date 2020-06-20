@@ -451,5 +451,13 @@ class DBProvider{
     :[];
   }
 
+
+  Future<List<ProductoModel>> filterAdvance(String query)async{
+    final db=await database;
+    final res=await db.rawQuery(query);
+    return res.isNotEmpty?res.map((producto) => ProductoModel.fromJson(producto)).toList()
+    :[];
+  }
+
   
 }

@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:find_dropdown/find_dropdown.dart';
 import 'package:flutter/material.dart';
+import 'package:grouped_buttons/grouped_buttons.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_producto.dart';
 import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
@@ -20,12 +23,10 @@ class ProductoPage extends StatefulWidget {
   _ProductoPageState createState() => _ProductoPageState();
 }
 
-class _ProductoPageState extends State<ProductoPage> {
+class _ProductoPageState extends State<ProductoPage> with AutomaticKeepAliveClientMixin<ProductoPage> {
   PreferenciasUsuario prefs;
   int pos;
-  
-  
-  CustomPopupMenu _selectedChoices;
+  final PageStorageKey _key=new PageStorageKey("key");
   @override
   void initState() {
     // TODO: implement initState
@@ -37,58 +38,34 @@ class _ProductoPageState extends State<ProductoPage> {
   
   @override
   Widget build(BuildContext context){
+    super.build(context);
     ProductoProvider productoModel=Provider.of<ProductoProvider>(context);
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
     UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
+    FilterProducto filterProducto=Provider.of<FilterProducto>(context);
+
+    
     return Scaffold(
       drawer: MenuLateral(),
       appBar: AppBar(
         actions: <Widget>[
           IconButton(icon: Icon(Icons.search), onPressed: (){
             //BotToast.showText(text: "Proximamente busqueda");
-            productoModel.filterP=null;
+            // productoModel.filterP=null;
+            filterProducto.limpirarFiltros();
             showSearch(context: context, delegate: DataSearchProducto());
           }),
-          (productoModel.consultaP!=null || productoModel.filterP!=null)
+          (productoModel.consultaP!=null || filterProducto.status)
           ?IconButton(icon: Icon(Icons.close), onPressed: (){
             productoModel.consultaP=null;
-            productoModel.filterP=null;
+            // productoModel.filterP=null;
+            filterProducto.limpirarFiltros();
             productoModel.notifyListeners();
           })
           :Container(),
           IconButton(icon: Icon(Icons.filter_list), onPressed: ()async{
-            await BotToast.showNotification(
-              duration: Duration(seconds: 5),
-              title: (_){
-                return FutureBuilder<List<CategoriaModel>>(
-                  future: productoModel.obtenerCategorias(),
-                  builder: (context,snapshot){
-                    if(!snapshot.hasData){
-                      return Center(child: CircularProgressIndicator(),);
-                    }
-                    if(snapshot.data.length==0){
-                      return Center(child: Text("No hay categoria disponibles"),);
-                    }
-                    return Container(
-                      height: 120.0,
-                      child: ListView.builder(
-                        itemBuilder: (context,index){
-                          return ListTile(
-                            title: Text(snapshot.data[index].categoria),
-                            onTap: (){
-                              productoModel.consultaP=null;
-                              productoModel.filterP=snapshot.data[index].categoria;
-                              productoModel.notifyListeners();
-                            },
-                          );
-                        },
-                        itemCount: snapshot.data.length,
-                      ),
-                    );
-                  },
-                );
-              }
-            );
+            filterProducto.limpirarFiltros();
+            Navigator.pushNamed(context, 'filter_producto');
           }),
           Environment().mostrarPopupMenu(
             choices: Environment().choicesProducto(
@@ -130,5 +107,9 @@ class _ProductoPageState extends State<ProductoPage> {
         break;
     }
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }
 

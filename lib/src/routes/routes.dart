@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_page_producto.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_producto.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/cliente_home.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/edit_cliente.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/upload_cliente.dart';
@@ -41,6 +43,9 @@ Map<String, WidgetBuilder> getApplicationRoutes() {
       'cliente_home':(BuildContext context)=>ClienteHomePage(),
       'upload_cliente':(BuildContext context)=>UploadCliente(),
       'edit_cliente':(BuildContext context)=>EditClientePage(),
+
+      /*Filter */
+      'filter_producto':(BuildContext context)=>FilterPageProducto(),
 
     };
   }

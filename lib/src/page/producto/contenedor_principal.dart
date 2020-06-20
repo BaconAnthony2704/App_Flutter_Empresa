@@ -1,5 +1,7 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_producto.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/usuario_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
@@ -18,12 +20,13 @@ class ContenedorPrincipal extends StatelessWidget {
     PreferenciasUsuario prefs=PreferenciasUsuario();
     UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
     ProductoProvider productoProvider=Provider.of<ProductoProvider>(context);
+    FilterProducto filterProducto=Provider.of<FilterProducto>(context);
     int idempresa=Provider.of<EmpresaProvider>(context).idempresa;
     return FutureBuilder<List<ProductoModel>>(
-      future: (productoProvider.consultaP==null && productoProvider.filterP==null)?productoProvider.obtenerTodosProductos(idempresa)
-      :(productoProvider.filterP==null)
+      future: (productoProvider.consultaP==null && !filterProducto.status)?productoProvider.obtenerTodosProductos(idempresa)
+      :(!filterProducto.status)
       ?productoProvider.buscarProducto(idempresa, productoProvider.consultaP)
-      :productoProvider.filtrarPorCategoria(idempresa, productoProvider.filterP),
+      :filterProducto.obtenerProductoFiltro(),
       builder: (context,snapshot){
         if(!snapshot.hasData){
           return Center(child: CircularProgressIndicator(),);
@@ -75,8 +78,7 @@ class ContenedorPrincipal extends StatelessWidget {
                         ),
                       ),
                       IconButton(icon: Icon(Icons.edit), onPressed: (){
-
-                      },color: Colors.orange,)
+                        BotToast.showText(text: "Proximamente");                      },color: Colors.orange,)
                     ],
                   ),
                   Divider(),
