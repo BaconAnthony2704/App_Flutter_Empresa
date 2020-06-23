@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/pdf_viewer.dart';
+import 'package:mantenimiento_empresa/src/models/ExtStorage_model.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
@@ -26,6 +27,7 @@ class Environment{
   Directory _downloadDirectory;
   EdgeInsetsGeometry get metMargen5All => EdgeInsets.all(5.0);
   Color get metColor => Colors.white;
+  
 
   TableRow generarFila(String texto,String concepto) {
     return TableRow(
@@ -398,9 +400,10 @@ class Environment{
     file.writeAsBytesSync(pdf.save());
   }
 
-  Future<String> downloadExcelProducto({List<ProductoModel> listaProducto})async{
+  Future<String> downloadExcelProducto({List<ProductoModel> listaProducto,BuildContext context})async{
     String hoja="Sheet1";
-    String ruta=await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
+    String ruta=await obtenerFolderRuta(context);
+    
     
     var excel=Excel.createExcel();
     String colorTexto="#252850";
@@ -422,12 +425,15 @@ class Environment{
     }
     var estado=await Permission.storage.request();
     if(estado.isGranted){
-      excel.encode().then((onValue){
-      File(join("${ruta}/excel_producto_${DateTime.now().toIso8601String()}.xlsx"))
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(onValue);
-      });
-      return "Guardado en: "+ruta;
+     if(ruta!=null){
+        excel.encode().then((onValue){
+        File(join("${ruta}/excel_producto_${DateTime.now().toIso8601String()}.xlsx"))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(onValue);
+        });
+        return "Guardado en: "+ruta;
+     }
+     return "No se pudo exportar el excel";
     }
     return "Solicite permisos de acceso";
     
@@ -530,9 +536,9 @@ class Environment{
       }
       
       if(lista.length>0){
-        String texto=await Environment().downloadExcelProducto(listaProducto:lista );
+        String texto=await Environment().downloadExcelProducto(listaProducto:lista,context: context );
         BotToast.showNotification(
-        leading: (_)=>Icon(Icons.file_download),
+        leading: (_)=>(!texto.contains("No"))?Icon(Icons.file_download):Icon(Icons.do_not_disturb),
         title: (_)=>Text(texto)
       );
       }else{
@@ -619,6 +625,63 @@ class Environment{
     }
     final n=num.tryParse(s);
     return (n==null)?false:true;
+  }
+
+  Future<String>obtenerFolderRuta(BuildContext context)async{
+    final alto=MediaQuery.of(context).size.height*.3;
+    String ruta;
+    await showDialog(context: context,
+    barrierDismissible: false,
+    builder: (context){
+      return AlertDialog(
+        content: FutureBuilder<List<RutaExternal>>(
+          future: RutaExternal().obtenerListaDirectorio(),
+          builder: (context,snapshot){
+            if(!snapshot.hasData){
+              return Container(
+                height: alto,
+                child: Center(
+                  child: CircularProgressIndicator(),));
+            }
+            if(snapshot.data.length==0){
+              return Container(
+                height: alto,
+                child: Center(
+                  child: Text("No hay carpetas disponibles"),));
+            }
+
+            return Container(
+              height: MediaQuery.of(context).size.height*.4,
+              child: Column(
+                children: <Widget>[
+                  Text("Seleccione la carpeta donde exportar el excel"),
+                  Divider(color: Theme.of(context).textSelectionColor,),
+                  Container(
+                    height: alto,
+                    child: ListView.builder(
+                      itemBuilder: (context,index){
+                        return ListTile(
+                          leading: Icon(FontAwesomeIcons.folder),
+                          title: Text(snapshot.data[index].ruta),
+                          subtitle: Text(snapshot.data[index].rutaNativa),
+                          onTap: (){
+                            ruta=snapshot.data[index].rutaNativa;
+                            Navigator.pop(context);
+                          },
+                        );
+                    },
+                    itemCount: snapshot.data.length,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+      );
+    }
+
+    );
+    return ruta;
   }
 
 

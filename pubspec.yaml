@@ -48,7 +48,6 @@ dependencies:
   ext_storage:
   find_dropdown: ^0.2.0
   grouped_buttons: ^1.0.4
-
   
 dev_dependencies:
   flutter_test:
