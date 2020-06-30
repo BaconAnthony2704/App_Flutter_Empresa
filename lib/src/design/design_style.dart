@@ -441,9 +441,9 @@ class Environment{
 
   }
 
-  Future<String> downloadExcelCliente({List<ClienteModel> listaCliente})async{
+  Future<String> downloadExcelCliente({List<ClienteModel> listaCliente,BuildContext context})async{
     String hoja="Sheet1";
-    String ruta=await ExtStorage.getExternalStoragePublicDirectory(ExtStorage.DIRECTORY_DOWNLOADS);
+    String ruta=await this.obtenerFolderRuta(context);
   
     var excel=Excel.createExcel();
     String colorTexto="#252850";
@@ -469,12 +469,15 @@ class Environment{
     }
     var estado=await Permission.storage.request();
     if(estado.isGranted){
-      excel.encode().then((onValue){
-      File(join("${ruta}/excel_cliente_${DateTime.now().toIso8601String()}.xlsx"))
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(onValue);
-      });
-      return "Guardado en: "+ruta;
+      if(ruta!=null){
+        excel.encode().then((onValue){
+        File(join("${ruta}/excel_cliente_${DateTime.now().toIso8601String()}.xlsx"))
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(onValue);
+        });
+        return "Guardado en: "+ruta;
+      }
+      return "No se pudo exportar el archivo excel";
     }
     return "Solicite permisos";
     
@@ -605,7 +608,7 @@ class Environment{
       }
       
       if(lista.length>0){
-        String texto=await Environment().downloadExcelCliente(listaCliente: lista );
+        String texto=await Environment().downloadExcelCliente(listaCliente: lista,context: context );
         BotToast.showNotification(
         leading: (_)=>Icon(Icons.file_download),
         title: (_)=>Text(texto)
