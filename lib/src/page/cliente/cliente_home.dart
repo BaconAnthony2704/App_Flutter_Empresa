@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_cliente.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
@@ -15,6 +16,7 @@ class ClienteHomePage extends StatelessWidget {
     ClienteProvider clienteProvider=Provider.of<ClienteProvider>(context);
     final idempresa=Provider.of<EmpresaProvider>(context).idempresa;
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
+    FilterCliente filterCliente=Provider.of<FilterCliente>(context);
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -22,46 +24,18 @@ class ClienteHomePage extends StatelessWidget {
             clienteProvider.filterC=null;
             showSearch(context: context, delegate: DataSearchCliente());
           }),
-          (clienteProvider.consultaP!=null || clienteProvider.filterC!=null)
+          (clienteProvider.consultaP!=null || filterCliente.status)
           ?IconButton(icon: Icon(Icons.close), onPressed: (){
             clienteProvider.consultaP=null;
             clienteProvider.filterC=null;
+            filterCliente.limpirarFiltros();
             clienteProvider.notifyListeners();
           })
           :Container(),
-          IconButton(icon: Icon(Icons.filter_list), onPressed: ()async{
-            await BotToast.showNotification(
-              duration: Duration(seconds: 5),
-              title: (_){
-                return FutureBuilder<List<FormaPagoModel>>(
-                  future: clienteProvider.obtenerFormaPago(),
-                  builder: (context,snapshot){
-                    if(!snapshot.hasData){
-                      return Center(child: CircularProgressIndicator(),);
-                    }
-                    if(snapshot.data.length==0){
-                      return Center(child: Text("No hay forma de pago disponible"),);
-                    }
-                    return Container(
-                      height: 120.0,
-                      child: ListView.builder(
-                        itemBuilder: (context,index){
-                          return ListTile(
-                            leading: Icon(Icons.filter_list),
-                            title: Text(snapshot.data[index].forma_pago),
-                            onTap: (){
-                              clienteProvider.filterC=snapshot.data[index].forma_pago;
-                              clienteProvider.notifyListeners();
-                            },
-                          );
-                        },
-                        itemCount: snapshot.data.length,
-                      ),
-                    );
-                  },
-                );
-              }
-            );
+          
+          IconButton(icon: Icon(Icons.filter_list), onPressed: (){
+            filterCliente.limpirarFiltros();
+            Navigator.of(context).pushNamed('filter_cliente');
           }),
           Environment().mostrarPopupMenu(choices: Environment().choicesCliente(
             context: context,
@@ -76,11 +50,11 @@ class ClienteHomePage extends StatelessWidget {
         height: double.infinity,
         margin: Environment().metMargen5All,
         child: FutureBuilder<List<ClienteModel>>(
-          future:(clienteProvider.consultaP==null && clienteProvider.filterC==null)
+          future:(clienteProvider.consultaP==null && !filterCliente.status)
           ? clienteProvider.mostrarClientes(idempresa)
-          :(clienteProvider.filterC!=null)
-          ?clienteProvider.filtrarPorFormaPago(idempresa, clienteProvider.filterC)
-          :clienteProvider.buscarCliente(idempresa, clienteProvider.consultaP),
+          :(!filterCliente.status)
+          ?clienteProvider.buscarCliente(idempresa, clienteProvider.consultaP)
+          :filterCliente.obtenerClienteFiltro(),
           builder: (context,snapshot){
             if(!snapshot.hasData){
               return Center(child: CircularProgressIndicator(),);

@@ -459,5 +459,12 @@ class DBProvider{
     :[];
   }
 
+  Future<List<ClienteModel>> filterAdvanceCliente(String query)async{
+    final db=await database;
+    final res=await db.rawQuery(query);
+    return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
+    :[];
+  }
+
   
 }

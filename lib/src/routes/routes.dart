@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mantenimiento_empresa/src/filters/filter_page_cliente.dart';
 import 'package:mantenimiento_empresa/src/filters/filter_page_producto.dart';
 import 'package:mantenimiento_empresa/src/filters/filter_producto.dart';
 import 'package:mantenimiento_empresa/src/page/cliente/cliente_home.dart';
@@ -46,6 +47,8 @@ Map<String, WidgetBuilder> getApplicationRoutes() {
 
       /*Filter */
       'filter_producto':(BuildContext context)=>FilterPageProducto(),
+      'filter_cliente':(BuildContext context)=>FilterPageCliente(),
+      
 
     };
   }
