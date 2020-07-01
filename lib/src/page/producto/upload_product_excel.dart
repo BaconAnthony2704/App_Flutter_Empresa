@@ -106,42 +106,46 @@ class _UploadProductExcelState extends State<UploadProductExcel> {
         backgroundColor: Theme.of(context).textSelectionColor,
         child: Icon(FontAwesomeIcons.fileExport),
         onPressed: ()async{
-          file=await FilePicker.getFile(
+          try{
+            file=await FilePicker.getFile(
             type: FileType.custom,
             allowedExtensions: ['xlsx']
-          );
-          //Validar que sea la extension correcta
-          if(file.existsSync()){
-            if(file.path.contains('.xlsx')){
-              String ruta=file.path;
-              var bytes=File(ruta).readAsBytesSync();
-              var excel=Excel.decodeBytes(bytes,update: true);
-              //var excel=Excel.decodeBytes(bytes,update: true);
-              //Llenar la lista con el modelo producto
-              for(var table in excel.tables.keys){
-                listaProducto.clear();
-                for(int i=1;i<excel.tables[table].rows.length;i++){
-                  productModel=new ProductoModel(
-                    nombre: excel.tables[table].rows[i][0].toString(),
-                    tipo: excel.tables[table].rows[i][1].toString(),
-                    categoria: excel.tables[table].rows[i][2].toString(),
-                    precio: double.parse(excel.tables[table].rows[i][3].toString()).roundToDouble(),
-                    cantidad: double.parse(excel.tables[table].rows[i][4].toString()).roundToDouble(),
-                    isoferta: int.parse(excel.tables[table].rows[i][5].toString()).truncate(),
-                    descripcion: excel.tables[table].rows[i][6].toString(),
-                    activo: int.parse(excel.tables[table].rows[i][7].toString()).truncate(),
-                    urlimagen: "",
-                    create_at: DateTime.now().toIso8601String(),
-                    upload_at: "",
-                    idempresa: empresaProvider
-                  );
-                  listaProducto.add(productModel);
+            );
+            //Validar que sea la extension correcta
+            if(file.existsSync()){
+              if(file.path.contains('.xlsx')){
+                String ruta=file.path;
+                var bytes=File(ruta).readAsBytesSync();
+                var excel=Excel.decodeBytes(bytes,update: true);
+                //var excel=Excel.decodeBytes(bytes,update: true);
+                //Llenar la lista con el modelo producto
+                for(var table in excel.tables.keys){
+                  listaProducto.clear();
+                  for(int i=1;i<excel.tables[table].rows.length;i++){
+                    productModel=new ProductoModel(
+                      nombre: excel.tables[table].rows[i][0].toString(),
+                      tipo: excel.tables[table].rows[i][1].toString(),
+                      categoria: excel.tables[table].rows[i][2].toString(),
+                      precio: double.parse(excel.tables[table].rows[i][3].toString()).roundToDouble(),
+                      cantidad: double.parse(excel.tables[table].rows[i][4].toString()).roundToDouble(),
+                      isoferta: int.parse(excel.tables[table].rows[i][5].toString()).truncate(),
+                      descripcion: excel.tables[table].rows[i][6].toString(),
+                      activo: int.parse(excel.tables[table].rows[i][7].toString()).truncate(),
+                      urlimagen: "",
+                      create_at: DateTime.now().toIso8601String(),
+                      upload_at: "",
+                      idempresa: empresaProvider
+                    );
+                    listaProducto.add(productModel);
+                  }
                 }
               }
+              setState(() {
+                
+              });
             }
-            setState(() {
-              
-            });
+          }catch(Exception){
+            BotToast.showText(text: "No se pudo obtener el maestro excel");
           }
         })
         :Container(),

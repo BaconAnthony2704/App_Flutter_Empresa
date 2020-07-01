@@ -85,40 +85,44 @@ class _UploadClienteState extends State<UploadCliente> {
         backgroundColor: Theme.of(context).textSelectionColor,
         child: Icon(FontAwesomeIcons.fileExport),
         onPressed: ()async{
-          file=await FilePicker.getFile(
+          try{
+            file=await FilePicker.getFile(
             type: FileType.custom,
             allowedExtensions: ['xlsx']
-          );
-          //Validar que sea la extension correcta
-          if(file.existsSync()){
-            if(file.path.contains('.xlsx')){
-              String ruta=file.path;
-              var bytes=File(ruta).readAsBytesSync();
-              var excel=Excel.decodeBytes(bytes,update: true);
-              //var excel=Excel.decodeBytes(bytes,update: true);
-              //Llenar la lista con el modelo producto
-              for(var table in excel.tables.keys){
-                lista.clear();
-                for(int i=1;i<excel.tables[table].rows.length;i++){
-                  clienteModel=new ClienteModel(
-                    nombre: excel.tables[table].rows[i][0].toString(),
-                    apellido: excel.tables[table].rows[i][1].toString(),
-                    email: excel.tables[table].rows[i][2].toString(),
-                    telefono: excel.tables[table].rows[i][3].toString(),
-                    celular: excel.tables[table].rows[i][4].toString(),
-                    telefono_oficina: excel.tables[table].rows[i][5].toString(),
-                    limite_credito: double.parse(excel.tables[table].rows[i][6].toString()).roundToDouble(),
-                    forma_pago: excel.tables[table].rows[i][7].toString(),
-                    activo: int.parse(excel.tables[table].rows[i][8].toString()).truncate(),
-                    idempresa: empresaProvider
-                  );
-                  lista.add(clienteModel);
+            );
+            //Validar que sea la extension correcta
+            if(file.existsSync()){
+              if(file.path.contains('.xlsx')){
+                String ruta=file.path;
+                var bytes=File(ruta).readAsBytesSync();
+                var excel=Excel.decodeBytes(bytes,update: true);
+                //var excel=Excel.decodeBytes(bytes,update: true);
+                //Llenar la lista con el modelo producto
+                for(var table in excel.tables.keys){
+                  lista.clear();
+                  for(int i=1;i<excel.tables[table].rows.length;i++){
+                    clienteModel=new ClienteModel(
+                      nombre: excel.tables[table].rows[i][0].toString(),
+                      apellido: excel.tables[table].rows[i][1].toString(),
+                      email: excel.tables[table].rows[i][2].toString(),
+                      telefono: excel.tables[table].rows[i][3].toString(),
+                      celular: excel.tables[table].rows[i][4].toString(),
+                      telefono_oficina: excel.tables[table].rows[i][5].toString(),
+                      limite_credito: double.parse(excel.tables[table].rows[i][6].toString()).roundToDouble(),
+                      forma_pago: excel.tables[table].rows[i][7].toString(),
+                      activo: int.parse(excel.tables[table].rows[i][8].toString()).truncate(),
+                      idempresa: empresaProvider
+                    );
+                    lista.add(clienteModel);
+                  }
                 }
               }
+              setState(() {
+                
+              });
             }
-            setState(() {
-              
-            });
+          }catch(Exception){
+            BotToast.showText(text: "No se pudo obtener maestro excel");
           }
         }
       ),

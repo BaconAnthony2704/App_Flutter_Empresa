@@ -97,43 +97,47 @@ class FilterCliente with ChangeNotifier{
   }
 
   crearConsultaFiltro(int idEmpresa){
-    if(_columnas.length>=0 && _valoresABuscar.length==0){
+    try{
+      if(_columnas.length>=0 && _valoresABuscar.length==0){
       _query="SELECT * FROM cliente WHERE idempresa=$idEmpresa";
-    }else{
-      _query="SELECT * FROM cliente WHERE idempresa=$idEmpresa AND ";
-    }
-    if(_valoresABuscar.length>0){
-      for(int i=0;i<_columnas.length;i++){
-        _query+=" ${_columnas[i]}";
-        if(_condiciones.length>0){
-          if(_condiciones[i]=="Contiene"){
-            _query+=" LIKE ";
-            if(_valoresABuscar.length>0){
-              _query+="'%${_valoresABuscar[i]}%' ";
+        }else{
+          _query="SELECT * FROM cliente WHERE idempresa=$idEmpresa AND ";
+        }
+        if(_valoresABuscar.length>0){
+          for(int i=0;i<_columnas.length;i++){
+            _query+=" ${_columnas[i]}";
+            if(_condiciones.length>0){
+              if(_condiciones[i]=="Contiene"){
+                _query+=" LIKE ";
+                if(_valoresABuscar.length>0){
+                  _query+="'%${_valoresABuscar[i]}%' ";
+                }
+              }else{
+                _query+=" = ";
+                if(_valoresABuscar.length>0){
+                  _query+=" '${_valoresABuscar[i]}' ";
+                }
+              }
             }
-          }else{
-            _query+=" = ";
-            if(_valoresABuscar.length>0){
-              _query+=" '${_valoresABuscar[i]}' ";
+            
+            if(_relaciones.length>0 && _relaciones.length > i){
+              if(_relaciones[i]=="Y"){
+                _query+=" AND";
+              }else{
+                _query+="OR";
+              }
             }
           }
+        }else{
+          BotToast.showText(text: "De clic de confirmar en su teclado");
         }
-        
-        if(_relaciones.length>0 && _relaciones.length > i){
-          if(_relaciones[i]=="Y"){
-            _query+=" AND";
-          }else{
-            _query+="OR";
-          }
-        }
-      }
-    }else{
-      BotToast.showText(text: "De clic de confirmar en su teclado");
-    }
 
-   status=true;
-   notifyListeners();
-   print(_query);
+      status=true;
+      notifyListeners();
+      print(_query);
+    }catch(Exception){
+      BotToast.showText(text: "No se pudo realizar filtro, verifique dato a ingresar");
+    }
    
   }
 
