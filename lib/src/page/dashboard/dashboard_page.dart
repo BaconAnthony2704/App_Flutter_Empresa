@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/producto_provider.dart';
@@ -21,30 +22,50 @@ class DashboardPage extends StatelessWidget {
           children: <Widget>[
             Card(
               elevation: 10.0,
-              child: Container(
-                height: MediaQuery.of(context).size.height*.5,
-                child: SfCartesianChart(
-                  primaryXAxis: CategoryAxis(),
-                  title: ChartTitle(text: "Half yearly sales analysis"),
-                  legend: Legend(isVisible:true),
-                  tooltipBehavior: TooltipBehavior(
-                    enable: true
-                  ),
-                  series:<LineSeries<SalesData,String>>[
-                    LineSeries<SalesData,String>(
-                      dataSource:<SalesData>[
-                        SalesData('Jan', 35),
-                        SalesData('Feb', 25),
-                        SalesData('Mar', 31),
-                        SalesData('Apr', 34),
-                        SalesData('May', 48)
-                      ], 
-                      xValueMapper: (SalesData sales,_)=>sales.year, 
-                      yValueMapper: (SalesData sales,_)=>sales.sales,
-                      dataLabelSettings: DataLabelSettings(isVisible: true)
+              child: FutureBuilder<List<ExistenciaPorTipoModel>>(
+                future: productoProvider.obtnerExistenciaPorTipo(empresaProvider.idempresa),
+                builder: (context,snapshot){
+                  if(!snapshot.hasData){
+                    return Container(
+                      height: MediaQuery.of(context).size.height*.5,
+                      child: Center(
+                        child: CircularProgressIndicator(),)
+                    );
+                  }
+                  if(snapshot.data.length==0){
+                    return Container(
+                      height: MediaQuery.of(context).size.height*.5,
+                      child: Center(
+                        child: Text("No se pudo obtener los datos"),
+                      ),
+                    );
+                  }
+                  return Container(
+                    height: MediaQuery.of(context).size.height*.5,
+                    child: SfCartesianChart(
+
+                      primaryXAxis: CategoryAxis(),
+                      title: ChartTitle(text: "Existencia por tipo"),
+                      legend: Legend(isVisible:true),
+                      tooltipBehavior: TooltipBehavior(
+                        enable: true,
+                      ),
+                      series:[
+                        LineSeries(
+                          legendItemText: "Existencia",
+                          isVisibleInLegend: false,
+                          name: "Existencia",
+                          dataSource: snapshot.data.map((e){
+                            return ExistenciaPorTipoModel(tipo: e.tipo,valor: e.valor);
+                          }).toList(), 
+                          xValueMapper: (ExistenciaPorTipoModel existencia,_)=>existencia.tipo, 
+                          yValueMapper: (ExistenciaPorTipoModel existencia,_)=>existencia.valor,
+                          dataLabelSettings: DataLabelSettings(isVisible: true),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                }
               ),
             ),
             Row(
@@ -54,24 +75,31 @@ class DashboardPage extends StatelessWidget {
                     elevation: 10.0,
                     child: Container(
                       height: MediaQuery.of(context).size.height*.3,
-                      child: SfCircularChart(
-                        title: ChartTitle(text:"Productos en existencias"),
-                        tooltipBehavior: TooltipBehavior(enable: true),
-                        series: <CircularSeries<SalesData,String>>[
-                          PieSeries<SalesData,String>(
-                            enableTooltip: true,
-                            dataSource: [
-                              SalesData('Jan', 35,color: Colors.red),
-                              SalesData('Feb', 25,color: Colors.blue),
-                              SalesData('Mar', 31,color: Colors.purple),
-                              SalesData('Apr', 34,color: Colors.yellow),
-                              SalesData('May', 48,color: Colors.orange)
+                      child: FutureBuilder<List<ExistenciaPorTipoModel>>(
+                        future: productoProvider.obtnerExistenciaPorTipo(empresaProvider.idempresa),
+                        builder: (context,snapshot){
+                          if(!snapshot.hasData){
+                            return Center(child: CircularProgressIndicator(),);
+                          }
+                          if(snapshot.data.length==0){
+                            return Center(child: Text("No hay existencia disponibles"),);
+                          }
+                          return SfCircularChart(
+                            title: ChartTitle(text:"Productos en existencias"),
+                            tooltipBehavior: TooltipBehavior(enable: true),
+                            series:[
+                              PieSeries<ExistenciaPorTipoModel,String>(
+                                enableTooltip: true,
+                                dataSource: snapshot.data.map((e){
+                                  return ExistenciaPorTipoModel(tipo: e.tipo,valor: e.valor,color: Color(int.parse(Environment().generateRandomHexColor(),radix: 16)));
+                                }).toList(),
+                                pointColorMapper: (ExistenciaPorTipoModel e,_)=>e.color,
+                                xValueMapper: (ExistenciaPorTipoModel e,_)=>e.tipo,
+                                yValueMapper: (ExistenciaPorTipoModel e,_)=>e.valor
+                              )
                             ],
-                            pointColorMapper: (SalesData sales,_)=>sales.color,
-                            xValueMapper: (SalesData sales,_)=>sales.year,
-                            yValueMapper: (SalesData sales,_)=>sales.sales
-                          )
-                        ],
+                          );
+                        }
                       ),
                     ),
                   ),

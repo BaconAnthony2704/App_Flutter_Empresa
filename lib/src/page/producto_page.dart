@@ -7,6 +7,7 @@ import 'package:grouped_buttons/grouped_buttons.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/filters/filter_producto.dart';
 import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/page/menu/mas_acciones.dart';
 import 'package:mantenimiento_empresa/src/page/menu/menu_drawer.dart';
 import 'package:mantenimiento_empresa/src/page/menu/search_delegate_producto.dart';
@@ -49,6 +50,12 @@ class _ProductoPageState extends State<ProductoPage> with AutomaticKeepAliveClie
       drawer: MenuLateral(),
       appBar: AppBar(
         actions: <Widget>[
+          IconButton(icon: Icon(Icons.show_chart), onPressed: ()async{
+            List<ExistenciaPorTipoModel> lista=await productoModel.obtnerExistenciaPorTipo(empresaProvider.idempresa);
+            lista.forEach((element) {
+              BotToast.showText(text: "${element.tipo}, ${element.valor}");
+             });
+          }),
           IconButton(icon: Icon(Icons.search), onPressed: (){
             //BotToast.showText(text: "Proximamente busqueda");
             // productoModel.filterP=null;

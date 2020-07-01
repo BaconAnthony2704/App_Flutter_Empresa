@@ -3,6 +3,7 @@ import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_model.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/rol_model.dart';
@@ -504,6 +505,13 @@ class DBProvider{
     else{
       return 0;
     }
+  }
+
+  Future<List<ExistenciaPorTipoModel>> getExistenciaPorTipo(int idEmpresa)async{
+    final db=await database;
+    final res=await db.rawQuery("SELECT tipo,count(tipo) as valor FROM ${tabla_producto} WHERE idEmpresa=$idEmpresa GROUP BY tipo");
+    return res.isNotEmpty?res.map((existencia) => ExistenciaPorTipoModel.fromJson(existencia)).toList()
+    :[];
   }
 
 

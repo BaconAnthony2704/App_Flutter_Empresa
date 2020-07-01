@@ -20,6 +20,7 @@ import 'package:mantenimiento_empresa/src/service/preferencias_usuario.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:pdf/pdf.dart';
+import 'dart:math';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 PreferenciasUsuario prefs=PreferenciasUsuario();
@@ -27,6 +28,16 @@ class Environment{
   Directory _downloadDirectory;
   EdgeInsetsGeometry get metMargen5All => EdgeInsets.all(5.0);
   Color get metColor => Colors.white;
+
+  Random _random = new Random();
+
+  String generateRandomHexColor(){
+      int length = 6;
+      String chars = '0123456789ABCDEF';
+      String hex = '';
+      while(length-- > 0) hex += chars[(_random.nextInt(16)) | 0];
+      return hex;
+  }
   
 
   TableRow generarFila(String texto,String concepto) {
