@@ -83,12 +83,55 @@ class DashboardPage extends StatelessWidget {
                         elevation: 10.0,
                         child: Container(
                           height: MediaQuery.of(context).size.height*.15,
+                          width: double.infinity,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: <Widget>[
+                                Text("Productos en Stock",textAlign: TextAlign.end,),
+                                FutureBuilder<double>(
+                                  initialData: 0,
+                                  future: productoProvider.obtenerProductoStock(empresaProvider.idempresa),
+                                  builder: (context,snapshot){
+                                  if(!snapshot.hasData){
+                                    return Center(child: CircularProgressIndicator(),);
+                                  }
+                                  return Text("${snapshot.data}",style: TextStyle(fontSize: 30),);
+                                }),
+                                Text("Total de Stock",textAlign: TextAlign.end,),
+                                FutureBuilder<double>(
+                                  initialData: 0,
+                                  future: productoProvider.obtenerPrecioStock(empresaProvider.idempresa),
+                                  builder: (context,snapshot){
+                                  if(!snapshot.hasData){
+                                    return Center(child: CircularProgressIndicator(),);
+                                  }
+                                  return Text("\$ ${snapshot.data}",style: TextStyle(fontSize: 25),);
+                                }),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                       Card(
                         elevation: 10.0,
                         child: Container(
                           height: MediaQuery.of(context).size.height*.15,
+                          child: Center(
+                            child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,  
+                            children: <Widget>[
+                              Text("Cliente potenciales"),
+                              FutureBuilder<double>(
+                                initialData: 0,
+                                future: clienteProvider.obtenerClientePotencial(empresaProvider.idempresa),
+                                builder: (context,snapshot){
+                                  if(!snapshot.hasData){
+                                    return CircularProgressIndicator();
+                                  }
+                                  return Text("${snapshot.data}",style: TextStyle(fontSize: 30),);
+                                })
+                            ],
+                          ),),
                         ),
                       ),
                     ],

@@ -81,5 +81,17 @@ class ProductoProvider with ChangeNotifier{
     List<ProductoModel> lista=await DBProvider.db.filterToCategory(idEmpresa, filtro);
     return lista;
   }
+
+  Future<double> obtenerProductoStock(int idEmpresa)async{
+    double stock=await DBProvider.db.getProductoStock(idEmpresa);
+    //notifyListeners();
+    return stock;
+  }
+
+  Future<double> obtenerPrecioStock(int idEmpresa)async{
+    double stockPrecio=await DBProvider.db.getProductoPrecioStock(idEmpresa);
+    //notifyListeners();
+    return stockPrecio;
+  }
   
 }

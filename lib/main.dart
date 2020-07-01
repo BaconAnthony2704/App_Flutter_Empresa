@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        initialRoute: prefs.ultimaPagina,
+        initialRoute: (prefs.ultimaPagina=='/' && prefs.inicioApp==0)?'login':prefs.ultimaPagina,
         routes: getApplicationRoutes(),
         builder: BotToastInit(),
         theme:  temaProvider,

@@ -55,7 +55,7 @@ class DBProvider{
   }
   initDB() async{
     Directory directory=await getApplicationDocumentsDirectory();
-    final path=join(directory.path,"manttoDB2.db");
+    final path=join(directory.path,"manttoDB3.db");
     return await openDatabase(
       path,
       version: 1,
@@ -465,6 +465,48 @@ class DBProvider{
     return res.isNotEmpty?res.map((cliente) => ClienteModel.fromJson(cliente)).toList()
     :[];
   }
+
+  Future<double> getProductoStock(int idEmpresa)async{
+    double stock=0.0;
+    final res=await db.getTodosProductos(idEmpresa);
+    if(res!=[]){
+      res.forEach((producto) {
+        stock++;
+       });
+    return stock;
+    }else{
+      return 0;
+    }
+  }
+
+  Future<double> getProductoPrecioStock(int idEmpresa)async{
+    double stock=0.0;
+    final res=await db.getTodosProductos(idEmpresa);
+    if(res!=[]){
+      res.forEach((producto) {
+        stock+=producto.cantidad*producto.precio;
+       });
+    return stock;
+    }else{
+      return 0;
+    }
+  }
+
+  Future<double> getClientePotenciales(int idEmpresa)async{
+    double cantidad=0.0;
+    final res=await db.obtenerClientes(idEmpresa);
+    if(res!=[]){
+      res.forEach((cliente) {
+        cantidad++;
+       });
+       return cantidad;
+    }
+    else{
+      return 0;
+    }
+  }
+
+
 
   
 }

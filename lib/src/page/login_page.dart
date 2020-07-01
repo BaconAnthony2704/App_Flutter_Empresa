@@ -16,7 +16,6 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     EmpresaProvider empresaProvider=Provider.of<EmpresaProvider>(context);
     UsuarioProvider usuarioProvider=Provider.of<UsuarioProvider>(context);
-    LoginBloc login=Provider.of<LoginBloc>(context);
     
     return WillPopScope(
       onWillPop:()async=> await Environment().salirApp(context, "Salir", "Deseas salir de la aplicacion?"),
@@ -24,7 +23,7 @@ class LoginPage extends StatelessWidget {
         body: Stack(
           children: <Widget>[
             _crearFondo(context),
-            _loginForm(context,empresaProvider,usuarioProvider,login),
+            _loginForm(context,empresaProvider,usuarioProvider),
           ],
         )
       ),
@@ -69,7 +68,7 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _loginForm(BuildContext context, EmpresaProvider empresaProvider,
-  UsuarioProvider usuarioProvider, LoginBloc login) {
+  UsuarioProvider usuarioProvider) {
     final size=MediaQuery.of(context).size;
     return SingleChildScrollView(
       child: Column(
@@ -93,11 +92,11 @@ class LoginPage extends StatelessWidget {
             children: <Widget>[
               Text("Ingreso",style: Theme.of(context).textTheme.headline6,),
               SizedBox(height: 60.0,),
-              _crearEmail(login),
+              _crearEmail(),
                SizedBox(height: 60.0,),
-              _crearPassword(context,login),
+              _crearPassword(context),
                SizedBox(height: 60.0,),
-              _crearBoton(context,empresaProvider,usuarioProvider,login),
+              _crearBoton(context,empresaProvider,usuarioProvider),
               SizedBox(height: 30.0,),
               _registrarse(context),
               
@@ -109,10 +108,8 @@ class LoginPage extends StatelessWidget {
     );
   }
 
- Widget _crearEmail(LoginBloc login) {
-   return StreamBuilder<String>(
-     stream: login.emailStream,
-     builder: (context,snapshot){
+ Widget _crearEmail() {
+   
        return Container(
          padding: EdgeInsets.symmetric(horizontal: 20.0),
          child: TextField(
@@ -121,18 +118,15 @@ class LoginPage extends StatelessWidget {
              icon: Icon(Icons.alternate_email),
              hintText: "Ejemplo@correo.com",
              labelText: "Correo electronico",
-             errorText: snapshot.error
            ),
-           onChanged: login.changeEmail,
+           onChanged: (value)=>email=value,
            controller: emailController,),
         );
-     }
-    );
+     
+    
  }
- Widget _crearPassword(BuildContext context, LoginBloc login) {
-   return StreamBuilder<String>(
-     stream: login.passwordStream,
-     builder: (context,snapshot){
+ Widget _crearPassword(BuildContext context) {
+   
        return Container(
         padding: EdgeInsets.symmetric(horizontal: 20.0),
         child: TextField(
@@ -140,19 +134,17 @@ class LoginPage extends StatelessWidget {
           decoration: InputDecoration(
             icon: Icon(Icons.lock_outline),
             labelText: 'Contraseña',
-            errorText: snapshot.error
           ),
-          onChanged: login.changePassword,
+          onChanged: (value)=>password=value,
           controller: passwordController,),
-        );
-     }
+  
     );
     
 
    
  }
  Widget _crearBoton(BuildContext context, EmpresaProvider empresaProvider,
-                    UsuarioProvider usuarioProvider, LoginBloc login){
+                    UsuarioProvider usuarioProvider){
        return RaisedButton(
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 80.0, vertical: 15.0),
@@ -165,22 +157,23 @@ class LoginPage extends StatelessWidget {
         color: Theme.of(context).primaryColor,
         textColor: Colors.white,
         onPressed:(){
-          _loginBtn(context,empresaProvider,usuarioProvider,login);
+          _loginBtn(context,empresaProvider,usuarioProvider);
         },
   );
  }
- _loginBtn(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider, LoginBloc login)async{
+ _loginBtn(BuildContext context, EmpresaProvider empresaProvider,UsuarioProvider usuarioProvider)async{
    
-   if(login.email==null && login.password==null){
+   if(email==null && password==null){
      await Environment().mostrarAlerta(context, "Completa los campos");
    }else{
      bool acceso=false,integridad;
-     integridad=await usuarioProvider.verificarIntegridad(login.email);
+     integridad=await usuarioProvider.verificarIntegridad(email);
      
-    acceso=await empresaProvider.obtenerUsuarioRegistrado(login.email, login.password);
+    acceso=await empresaProvider.obtenerUsuarioRegistrado(email, password);
     empresaProvider.notifyListeners();
     if(acceso){
       _prefs.ultimaPagina='/';
+      _prefs.inicioApp=1;
       Navigator.of(context).pushReplacementNamed('/');
       
     }else{
@@ -189,7 +182,7 @@ class LoginPage extends StatelessWidget {
       passwordController.clear();
       if(!integridad && usuarioProvider.idempresa==0){
        //await Environment().mostrarAlerta(context, "Solicite permiso de acceso");
-       await Environment().mostrarEmpresas(context,empresaProvider,login.email,login.password);
+       await Environment().mostrarEmpresas(context,empresaProvider,email,password);
      }else{
        await Environment().mostrarAlerta(context, "Solicite permiso de acceso");
      }

@@ -20,6 +20,13 @@ class PreferenciasUsuario{
     _prefs.setString('ultimaPagina', value);
   }
 
+  get inicioApp{
+    return _prefs.getInt('inicioApp')??0;
+  }
+  set inicioApp(int value){
+    _prefs.setInt('inicioApp', value);
+  }
+
   //set y get de color de tema
   get tema{
     return _prefs.getInt('tema')??0;

@@ -22,7 +22,7 @@ import 'package:path/path.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
-
+PreferenciasUsuario prefs=PreferenciasUsuario();
 class Environment{
   Directory _downloadDirectory;
   EdgeInsetsGeometry get metMargen5All => EdgeInsets.all(5.0);
@@ -202,6 +202,7 @@ class Environment{
           onPressed: (){
           estado=true;
           //Navigator.of(context).pop();
+          prefs.ultimaPagina='login';
           SystemChannels.platform.invokeMethod('SystemNavigator.pop');
         },child: Text("Si"),),
         RaisedButton(

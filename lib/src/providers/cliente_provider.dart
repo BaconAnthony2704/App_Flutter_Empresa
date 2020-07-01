@@ -43,4 +43,9 @@ class ClienteProvider with ChangeNotifier{
     List<ClienteModel> lista=await DBProvider.db.filterToPayment(idEmpresa, filtro);
     return lista;
   }
+
+  Future<double> obtenerClientePotencial(int idEmpresa)async{
+    double cant=await DBProvider.db.getClientePotenciales(idEmpresa);
+    return cant;
+  }
 }
