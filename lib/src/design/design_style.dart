@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 //import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:excel/excel.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:ext_storage/ext_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -697,6 +698,86 @@ class Environment{
 
     );
     return ruta;
+  }
+
+  void launchWhatsApp({@required String phone,@required String message })async{
+    String url(){
+      if(Platform.isIOS){
+        return "whatsapp:://wa.me/$phone/?text=${Uri.parse(message)}";
+      }
+      else{
+        return "whatsapp://send?phone=$phone&text=${Uri.parse(message)}";
+      }
+    }
+    if(await canLaunch(url())){
+      await launch(url());
+    }else{
+      throw "Could not launc ${url()}";
+    }
+  }
+
+  void launcCorreo({@required String correo,@required String message })async{
+    String url(){
+      return "mailto:$correo?subject=Promociones&body=$message";
+    }
+    if(await canLaunch(url())){
+      await launch(url());
+    }else{
+      throw "Could not launch ${url()}";
+    }
+  }
+
+  void launcPhone({@required String telefono})async{
+    String url(){
+      return "tel:$telefono";
+    }
+    if(await canLaunch(url())){
+      await launch(url());
+    }else{
+      throw "Could not launch ${url()}";
+    }
+  }
+
+  String listaProductoString({@required List<ProductoModel> listado,@required String empresa="Empresa"}){
+    String texto="";
+    final now=new TimeOfDay.fromDateTime(DateTime.now());
+    
+    if(now.hour>=6 && now.hour<=12){
+      texto+="Buen dia, ";
+    }
+    else if(now.hour>=13 && now.hour<=18){
+      texto+="Buenas Tardes, ";
+    }
+    else{
+      texto+="Buenas noches, ";
+    }
+    texto+="es un gusto poder saludarlo; ahora en *${empresa}*, estamos con la \n¡¡¡SUPER PROMOCIÒN!!!\n\n";
+    listado.forEach((pro) {
+      texto+="${pro.nombre} | *\$ ${pro.precio.toStringAsFixed(2)} c/u*\n";
+     });
+     texto+="\nQuedamos a su disposicion para ayudarle ante cualquier solicitud.";
+     return texto;
+  }
+
+  String listaProductoStringCorreo({@required List<ProductoModel> listado,@required String empresa="Empresa"}){
+    String texto="";
+    final now=new TimeOfDay.fromDateTime(DateTime.now());
+    
+    if(now.hour>=6 && now.hour<=12){
+      texto+="Buen dia, ";
+    }
+    else if(now.hour>=13 && now.hour<=18){
+      texto+="Buenas Tardes, ";
+    }
+    else{
+      texto+="Buenas noches, ";
+    }
+    texto+="es un gusto poder saludarlo; ahora en ${empresa.toUpperCase()}, estamos con la \n¡¡¡SUPER PROMOCIÒN!!!\n\n";
+    listado.forEach((pro) {
+      texto+="${pro.nombre} | \$ ${pro.precio.toStringAsFixed(2)} c/u\n";
+     });
+     texto+="\nQuedamos a su disposicion para ayudarle ante cualquier solicitud.";
+     return texto;
   }
 
 

@@ -416,6 +416,12 @@ class DBProvider{
     return res;
   }
 
+  Future<int> deleteCliente(int idCliente)async{
+    final db=await database;
+    final res=await db.delete(tabla_cliente,where: "${columna_cliente[0]}=?",whereArgs: [idCliente]);
+    return res;
+  }
+
   Future<List<CategoriaModel>> obtenerCategorias()async{
 
     final db=await database;

@@ -48,4 +48,10 @@ class ClienteProvider with ChangeNotifier{
     double cant=await DBProvider.db.getClientePotenciales(idEmpresa);
     return cant;
   }
+
+  Future<int> eliminarCliente(int idCliente)async{
+    int estado=await DBProvider.db.deleteCliente(idCliente);
+    return estado;
+  }
 }
+
