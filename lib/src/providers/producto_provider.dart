@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
+import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
 import 'package:mantenimiento_empresa/src/service/db_provider.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:http/http.dart' as http;
@@ -98,5 +99,15 @@ class ProductoProvider with ChangeNotifier{
   Future<List<ExistenciaPorTipoModel>> obtnerExistenciaPorTipo(int idEmpresa)async{
     List<ExistenciaPorTipoModel> lista=await DBProvider.db.getExistenciaPorTipo(idEmpresa);
     return lista;
+  }
+
+  Future<int> ingresarTipoProducto(TipoProductoModel tipoProductoModel)async{
+    int valor=await DBProvider.db.crearTipoProducto(tipoProductoModel);
+    return valor;
+  }
+
+  Future<List<TipoProductoModel>> getTodosTipoProducto(int idEmpresa)async{
+    List<TipoProductoModel> listado=await DBProvider.db.getTodosTipoProductos(idEmpresa);
+    return listado;
   }
 }

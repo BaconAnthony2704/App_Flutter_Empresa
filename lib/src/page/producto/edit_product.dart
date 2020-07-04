@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
+import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/producto_provider.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,7 @@ class EditProduct extends StatefulWidget {
 
 class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClientMixin{
   String nombre="",detalle="",descripcion="",tipo;
-
+  EmpresaProvider empresaProvider;
   double precio=0.0, existencia=0.0;
   List<String> listaTipo=["Computadora","Rayado","Azul"];
   List<String>listaCategoria=["Escolar","Tecnologia","Materia prima","Utensilios"];
@@ -24,18 +25,22 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
   File foto;
   String tituloInterfaz;
   double cantidad;
+  ProductoProvider productoProvider;
   TextEditingController txtNombre=new TextEditingController();
   TextEditingController txtDescripcion=new TextEditingController();
   TextEditingController txtPrecio=new TextEditingController();
   TextEditingController txtTipo=new TextEditingController();
   TextEditingController txtCategoria=new TextEditingController();
   TextEditingController txtCantidad=new TextEditingController();
+  int idempresa;
   @override
   Widget build(BuildContext context) {
-    ProductoProvider productoProvider=
+    productoProvider=
     Provider.of<ProductoProvider>(context);
-    final idempresa=Provider.of<EmpresaProvider>(context).idempresa;
+  
+    idempresa=Provider.of<EmpresaProvider>(context).idempresa;
     ProductoModel productoEdit=ModalRoute.of(context).settings.arguments;
+    
     if(productoEdit==null){
       
       tituloInterfaz="Crear producto";
@@ -80,11 +85,16 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
             _crearDetalle(),
             Divider(),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+                Flexible(child: _crearNuevoTipoProducto()),
                 Expanded(
+                  flex: 3,
                   child: _crearTipo(),
                 ),
+                
                 Expanded(
+                  flex: 3,
                   child: _crearCategoria()
                 )
               ],
@@ -380,7 +390,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
           borderRadius: BorderRadius.circular(20.0),
         ),
         hintText: "Tipo",
-        labelText: "Tipo"
+        labelText: "Tipo", 
       ),
       onTap: ()async{
         FocusScope.of(context).requestFocus(new FocusNode());
@@ -388,26 +398,34 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
         builder: (context)=>AlertDialog(
           content: Container(
             height: MediaQuery.of(context).size.height*.3,
-            child: ListView.builder(
-              itemBuilder: (context,index){
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text("${listaTipo[index]}"),
-                  onTap: (){
-                    txtTipo=new TextEditingController();
-                    tipo=txtTipo.text;
-                    txtTipo.text="";
-                    tipo=listaTipo[index];
-                    txtTipo.text=listaTipo[index];
-                    setState(() {
-                      
-                    });
-                    Navigator.of(context).pop();
-                    
+            child: FutureBuilder<List<TipoProductoModel>>(
+              future: productoProvider.getTodosTipoProducto(idempresa),
+              builder: (context,snapshot){
+                if(!snapshot.hasData){
+                  return Center(child: CircularProgressIndicator(),);
+                }
+                if(snapshot.data.length==0){
+                  return Center(child: Text("No hay tipo de producto ingresados"),);
+                }
+                return ListView.builder(
+                  itemBuilder: (context,index){
+                    return ListTile(
+                      leading: Icon(Icons.store),
+                      title: Text(snapshot.data[index].tipo),
+                      subtitle: Table(
+                        children: [
+                          Environment().generarFila("Arancel", snapshot.data[index].arancel.toStringAsFixed(2))
+                        ],
+                      ),
+                      onTap: (){
+                        txtTipo.text=snapshot.data[index].tipo;
+                        Navigator.pop(context);
+                      },
+                    );
                   },
+                  itemCount: snapshot.data.length,
                 );
-              },
-              itemCount: listaTipo.length,
+              }
             ),
           ),
         ));
@@ -450,5 +468,84 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
       },
       controller: txtCategoria,
     );
+  }
+
+  Widget _crearNuevoTipoProducto() {
+    return IconButton(
+      icon: Icon(Icons.add), onPressed: ()async{
+          BotToast.showText(text: "Agregar nuevo tipo de producto");
+          await showDialog(context: context,
+          builder: (context){
+            String tipo;
+            double arancel;
+            return AlertDialog(
+              content: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Text("Nuevo tipo producto"),
+                    Divider(),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        hintText: "Tipo de producto",
+                        labelText: "Tipo",
+                      ),
+                      onChanged: (value){
+                        tipo=value;
+                      },
+                    ),
+                    Divider(),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        hintText: "Arancel",
+                        labelText: "Arancel"
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value){
+                        arancel=double.parse(value);
+                      },
+                    ),
+                    RaisedButton.icon(
+                      icon: Icon(Icons.check),
+                      label: Text("Ingresar tipo"),
+                      onPressed: ()async{
+                        var tipoProductoModel=TipoProductoModel(
+                          tipo: tipo,
+                          arancel: arancel,
+                          create_at: DateTime.now().toIso8601String(),
+                          en_uso: 1,
+                          factor1: 0.1,
+                          factor2: 0,
+                          factor3: 0,
+                          factor4: 0,
+                          factor5: 0,
+                          foto: "",
+                          idempresa: idempresa,
+                          preferido: 0,
+                          principal: 0,
+                          upload_at: ""
+                        );
+                        int valor=await productoProvider.ingresarTipoProducto(tipoProductoModel);
+                        if(valor>0){
+                          BotToast.showText(text: "Se agrego con exito");
+                          txtTipo.clear();
+                          txtTipo.text=tipo;
+                          Navigator.pop(context);
+                        }else{
+                          BotToast.showText(text: "No se pudo agregar, verifique integridad");
+                        }
+                      }
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+      });
   }
 }

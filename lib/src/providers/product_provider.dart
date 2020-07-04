@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mantenimiento_empresa/src/models/product_model.dart';
+import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
+import 'package:mantenimiento_empresa/src/service/db_provider.dart';
 
 class ProductProvider with ChangeNotifier{
   String consulta;
@@ -116,6 +118,16 @@ class ProductProvider with ChangeNotifier{
   void eliminarProducto(int index){
     this.listProduct.removeAt(index);
     notifyListeners();
+  }
+
+  Future<int> ingresarTipoProducto(TipoProductoModel tipoProductoModel)async{
+    int valor=await DBProvider.db.crearTipoProducto(tipoProductoModel);
+    return valor;
+  }
+
+  Future<List<TipoProductoModel>> getTodosTipoProducto(int idEmpresa)async{
+    List<TipoProductoModel> listado=await DBProvider.db.getTodosTipoProductos(idEmpresa);
+    return listado;
   }
 
 

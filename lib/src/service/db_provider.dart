@@ -7,6 +7,7 @@ import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/rol_model.dart';
+import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/usuario_model.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -26,6 +27,7 @@ class DBProvider{
   final String tabla_producto="producto";
   final String tabla_existencia="existencia";
   final String tabla_cliente="cliente";
+  final String tabla_tipo_producto="tipo_producto";
 
   //Columnas
   List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio",
@@ -43,6 +45,11 @@ class DBProvider{
 
   List<String> columna_cliente=["idcliente","nombre","apellido","email","telefono","limite_credito",
                                 "forma_pago","activo","idempresa","celular","telefono_oficina"];
+
+  List<String> columna_tipo_producto=["tipo","arancel","foto","en_uso","preferido",
+                                      "factor1","factor2","factor3","factor4",
+                                      "factor5","principal","create_at","upload_at",
+                                      "idempresa"];
 
   DBProvider._();
   //Creamos el metodo para verificar si la tabla existe
@@ -102,6 +109,29 @@ class DBProvider{
           ${columna_usuario[10]} INTEGER
           )
          ''');
+
+
+         await db.execute(
+          '''CREATE TABLE ${tabla_tipo_producto}
+          (
+          ${columna_tipo_producto[0]} VARCHAR(20) PRIMARY KEY UNIQUE,
+          ${columna_tipo_producto[1]} REAL,
+          ${columna_tipo_producto[2]} TEXT,
+          ${columna_tipo_producto[3]} INTEGER,
+          ${columna_tipo_producto[4]} INTEGER,
+          ${columna_tipo_producto[5]} REAL,
+          ${columna_tipo_producto[6]} REAL,
+          ${columna_tipo_producto[7]} REAL,
+          ${columna_tipo_producto[8]} REAL,
+          ${columna_tipo_producto[9]} REAL,
+          ${columna_tipo_producto[10]} INTEGER,
+          ${columna_tipo_producto[11]} TEXT,
+          ${columna_tipo_producto[12]} TEXT,
+          ${columna_tipo_producto[13]} INTEGER
+          
+          )
+         ''');
+         print("Tabla tipo producto creada");
          print("Tabla usuario creada");
          await db.execute(
           '''CREATE TABLE ${tabla_rol}
@@ -520,7 +550,34 @@ class DBProvider{
     :[];
   }
 
+  //Crear tipo producto
+  Future<int> crearTipoProducto(TipoProductoModel tipoProductoModel)async{
+    /*columna_tipo_producto=["tipo","arancel","foto","en_uso","preferido",
+     "factor1","factor2","factor3","factor4",
+     "factor5","principal","create_at","upload_at",
+      "idempresa"]; */
+    try{
+      if(tipoProductoModel.tipo.isNotEmpty){
+        final db=await database;
+        final res=await db.insert(tabla_tipo_producto, tipoProductoModel.toJson());
+        return res;
+      }else{
+        return 0;
+      }
+    }catch(Exception){
+      return 0;
+    }
+  }
 
+  //Obtener TODOS  tipo productos
+  Future<List<TipoProductoModel>> getTodosTipoProductos(int idempresa)async{
+    final db=await database;
+    final res=await db.query(tabla_tipo_producto,where: "${columna_tipo_producto[13]}=?",whereArgs: [idempresa]);
+    List<TipoProductoModel> list=res.isNotEmpty
+                            ?res.map((tipo) => TipoProductoModel.fromJson(tipo)).toList()
+                            :[];
+    return list;
+  }
 
   
 }
