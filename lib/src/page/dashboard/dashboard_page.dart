@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_categoria.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/providers/cliente_provider.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
@@ -75,8 +76,8 @@ class DashboardPage extends StatelessWidget {
                     elevation: 10.0,
                     child: Container(
                       height: MediaQuery.of(context).size.height*.3,
-                      child: FutureBuilder<List<ExistenciaPorTipoModel>>(
-                        future: productoProvider.obtnerExistenciaPorTipo(empresaProvider.idempresa),
+                      child: FutureBuilder<List<ExistenciaPorCategoriaModel>>(
+                        future: productoProvider.obtnerExistenciaPorCategoria(empresaProvider.idempresa),
                         builder: (context,snapshot){
                           if(!snapshot.hasData){
                             return Center(child: CircularProgressIndicator(),);
@@ -85,17 +86,17 @@ class DashboardPage extends StatelessWidget {
                             return Center(child: Text("No hay existencia disponibles"),);
                           }
                           return SfCircularChart(
-                            title: ChartTitle(text:"Productos en existencias"),
+                            title: ChartTitle(text:"Productos por categoria"),
                             tooltipBehavior: TooltipBehavior(enable: true),
                             series:[
-                              PieSeries<ExistenciaPorTipoModel,String>(
+                              PieSeries<ExistenciaPorCategoriaModel,String>(
                                 enableTooltip: true,
                                 dataSource: snapshot.data.map((e){
-                                  return ExistenciaPorTipoModel(tipo: e.tipo,valor: e.valor,color: Color(int.parse(Environment().generateRandomHexColor(),radix: 16)));
+                                  return ExistenciaPorCategoriaModel(categoria: e.categoria,valor: e.valor,color: Color(int.parse(Environment().generateRandomHexColor(),radix: 16)));
                                 }).toList(),
-                                pointColorMapper: (ExistenciaPorTipoModel e,_)=>e.color,
-                                xValueMapper: (ExistenciaPorTipoModel e,_)=>e.tipo,
-                                yValueMapper: (ExistenciaPorTipoModel e,_)=>e.valor
+                                pointColorMapper: (ExistenciaPorCategoriaModel e,_)=>e.color,
+                                xValueMapper: (ExistenciaPorCategoriaModel e,_)=>e.categoria,
+                                yValueMapper: (ExistenciaPorCategoriaModel e,_)=>e.valor
                               )
                             ],
                           );
@@ -173,12 +174,4 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
-}
-
-class SalesData{
-  SalesData(this.year,this.sales,{this.color=Colors.green});
-
-  final String year;
-  final double sales;
-  final Color color;
 }

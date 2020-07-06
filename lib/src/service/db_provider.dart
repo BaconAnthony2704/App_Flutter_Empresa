@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/cliente_model.dart';
 import 'package:mantenimiento_empresa/src/models/empresa_model.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_categoria.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_model.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/models/forma_pago_model.dart';
@@ -28,6 +29,7 @@ class DBProvider{
   final String tabla_existencia="existencia";
   final String tabla_cliente="cliente";
   final String tabla_tipo_producto="tipo_producto";
+  final String tabla_categoria_producto="categoria_producto";
 
   //Columnas
   List<String> columna_empresa=["idempresa","nombre","giro","nit","telefono","email","direccion","isdomicilio",
@@ -50,6 +52,7 @@ class DBProvider{
                                       "factor1","factor2","factor3","factor4",
                                       "factor5","principal","create_at","upload_at",
                                       "idempresa"];
+  List<String> columna_categoria_producto=["categoria","idempresa","en_uso","preferido"];
 
   DBProvider._();
   //Creamos el metodo para verificar si la tabla existe
@@ -190,6 +193,17 @@ class DBProvider{
          '''
          );
          print("Tabla cliente creada");
+         await db.execute(
+           '''CREATE TABLE ${tabla_categoria_producto}
+          (
+          ${columna_categoria_producto[0]} VARCHAR(30) PRIMARY KEY UNIQUE,
+          ${columna_categoria_producto[1]} INTEGER,
+          ${columna_categoria_producto[2]} INTEGER,
+          ${columna_categoria_producto[3]} INTEGER
+          
+          )
+         '''
+         );
          //["idrol","accion","activo"];
          await db.execute('''
          INSERT INTO ${tabla_rol} 
@@ -549,6 +563,12 @@ class DBProvider{
     return res.isNotEmpty?res.map((existencia) => ExistenciaPorTipoModel.fromJson(existencia)).toList()
     :[];
   }
+  Future<List<ExistenciaPorCategoriaModel>> getExistenciaPorCategoria(int idEmpresa)async{
+    final db=await database;
+    final res=await db.rawQuery("SELECT categoria,count(categoria) as valor FROM ${tabla_producto} WHERE idEmpresa=$idEmpresa GROUP BY categoria");
+    return res.isNotEmpty?res.map((existencia) => ExistenciaPorCategoriaModel.fromJson(existencia)).toList()
+    :[];
+  }
 
   //Crear tipo producto
   Future<int> crearTipoProducto(TipoProductoModel tipoProductoModel)async{
@@ -578,6 +598,24 @@ class DBProvider{
                             :[];
     return list;
   }
+
+  //Ingresar categoria producto
+  Future<int> crearCategoriaProducto(CategoriaModel categoriaModel)async{
+    final db=await database;
+    final res=await db.insert(tabla_categoria_producto, categoriaModel.toJson());
+    return res;
+
+  }
+
+  //Obtener todas las categoria producto
+  Future<List<CategoriaModel>> getTodosCategoriaProducto(int idEmpresa)async{
+    final db=await database;
+    final res=await db.query(tabla_categoria_producto,where: "${columna_categoria_producto[1]}=?",whereArgs: [idEmpresa]);
+    List<CategoriaModel> list=res.isNotEmpty?res.map((categoria) => CategoriaModel.fromJson(categoria)).toList()
+                              :[];
+    return list;
+  }
+
 
   
 }

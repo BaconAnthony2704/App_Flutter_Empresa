@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mantenimiento_empresa/src/design/design_style.dart';
+import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
 import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
@@ -16,11 +17,10 @@ class EditProduct extends StatefulWidget {
 }
 
 class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClientMixin{
-  String nombre="",detalle="",descripcion="",tipo;
+  String nombre="",detalle="",descripcion="",tipo,categoria;
   EmpresaProvider empresaProvider;
   double precio=0.0, existencia=0.0;
-  List<String> listaTipo=["Computadora","Rayado","Azul"];
-  List<String>listaCategoria=["Escolar","Tecnologia","Materia prima","Utensilios"];
+  List<String>listaCategoria;
   bool favorito=false,oferta=false;
   File foto;
   String tituloInterfaz;
@@ -96,7 +96,8 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                 Expanded(
                   flex: 3,
                   child: _crearCategoria()
-                )
+                ),
+                Flexible(child: _crearNuevoCategoriaProducto()),
               ],
             ),
             Divider(),
@@ -449,19 +450,32 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
         await showDialog(context: context,
         builder: (context)=>AlertDialog(
           content: Container(
-            height: MediaQuery.of(context).size.height*.3,
-            child: ListView.builder(
-              itemBuilder: (context,index){
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text("${listaCategoria[index]}"),
-                  onTap: (){
-                    txtCategoria.text=listaCategoria[index];
-                    Navigator.of(context).pop();
+            height: MediaQuery.of(context).size.height*.4,
+            child: FutureBuilder<List<CategoriaModel>>(
+              future: productoProvider.obtenerCategoriasProducto(idempresa),
+              builder: (context,snapshot){
+                if(!snapshot.hasData){
+                  return Center(child: CircularProgressIndicator(),);
+                }
+                if(snapshot.data.length==0){
+                  return Center(child: Text("No hay categorias disponibles"),);
+                }
+                return ListView.builder(
+                  itemBuilder: (context,index){
+                    return SingleChildScrollView(
+                      child: ListTile(
+                        leading: CircleAvatar(child: Text(snapshot.data[index].categoria[0]),),
+                        title: Text(snapshot.data[index].categoria),
+                        onTap: (){
+                          txtCategoria.text=snapshot.data[index].categoria;
+                          Navigator.pop(context);
+                        },
+                      ),
+                    );
                   },
+                  itemCount: snapshot.data.length,
                 );
-              },
-              itemCount: listaCategoria.length,
+              }
             ),
           ),
         ));
@@ -535,6 +549,62 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                           BotToast.showText(text: "Se agrego con exito");
                           txtTipo.clear();
                           txtTipo.text=tipo;
+                          Navigator.pop(context);
+                        }else{
+                          BotToast.showText(text: "No se pudo agregar, verifique integridad");
+                        }
+                      }
+                    )
+                  ],
+                ),
+              ),
+            );
+          });
+      });
+  }
+
+  Widget _crearNuevoCategoriaProducto() {
+    return IconButton(
+      icon: Icon(Icons.add), onPressed: ()async{
+          BotToast.showText(text: "Agregar nuevo categoria");
+          await showDialog(context: context,
+          builder: (context){
+            String tipo;
+            double arancel;
+            return AlertDialog(
+              content: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Text("Nueva categoria producto"),
+                    Divider(),
+                    TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        hintText: "Categoria de producto",
+                        labelText: "Categoria",
+                      ),
+                      onChanged: (value){
+                        categoria=value;
+                      },
+                    ),
+                    Divider(),
+                    RaisedButton.icon(
+                      icon: Icon(Icons.check),
+                      label: Text("Ingresar categoria"),
+                      onPressed: ()async{
+                        var categoriaModel=CategoriaModel(
+                          categoria: categoria,
+                          en_uso: 1,
+                          idEmpresa: idempresa,
+                          preferido: 1
+                        );
+                        int valor=await productoProvider.ingresarCategoriaProducto(categoriaModel);
+                        if(valor>0){
+                          BotToast.showText(text: "Se agrego con exito");
+                          txtCategoria.clear();
+                          txtCategoria.text=categoria;
                           Navigator.pop(context);
                         }else{
                           BotToast.showText(text: "No se pudo agregar, verifique integridad");

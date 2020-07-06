@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mantenimiento_empresa/src/models/categoria_model.dart';
+import 'package:mantenimiento_empresa/src/models/existencia_categoria.dart';
 import 'package:mantenimiento_empresa/src/models/existencia_tipo.dart';
 import 'package:mantenimiento_empresa/src/models/producto_model.dart';
 import 'package:mantenimiento_empresa/src/models/tipo_producto_model.dart';
@@ -100,6 +101,10 @@ class ProductoProvider with ChangeNotifier{
     List<ExistenciaPorTipoModel> lista=await DBProvider.db.getExistenciaPorTipo(idEmpresa);
     return lista;
   }
+  Future<List<ExistenciaPorCategoriaModel>> obtnerExistenciaPorCategoria(int idEmpresa)async{
+    List<ExistenciaPorCategoriaModel> lista=await DBProvider.db.getExistenciaPorCategoria(idEmpresa);
+    return lista;
+  }
 
   Future<int> ingresarTipoProducto(TipoProductoModel tipoProductoModel)async{
     int valor=await DBProvider.db.crearTipoProducto(tipoProductoModel);
@@ -109,5 +114,15 @@ class ProductoProvider with ChangeNotifier{
   Future<List<TipoProductoModel>> getTodosTipoProducto(int idEmpresa)async{
     List<TipoProductoModel> listado=await DBProvider.db.getTodosTipoProductos(idEmpresa);
     return listado;
+  }
+
+  Future<int> ingresarCategoriaProducto(CategoriaModel categoriaModel)async{
+    int valor =await DBProvider.db.crearCategoriaProducto(categoriaModel);
+    return valor;
+  }
+
+  Future<List<CategoriaModel>> obtenerCategoriasProducto(int idEmpresa)async{
+    List<CategoriaModel> lista=await DBProvider.db.getTodosCategoriaProducto(idEmpresa);
+    return lista;
   }
 }

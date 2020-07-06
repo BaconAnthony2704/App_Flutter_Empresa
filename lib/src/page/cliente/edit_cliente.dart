@@ -6,7 +6,7 @@ import 'package:mantenimiento_empresa/src/providers/empresa_provider.dart';
 import 'package:provider/provider.dart';
 
 class EditClientePage extends StatefulWidget {
-  //crear la clave para el formulario [ara que se pueda ocupar en el submit
+  
   @override
   _EditClientePageState createState() => _EditClientePageState();
 }
