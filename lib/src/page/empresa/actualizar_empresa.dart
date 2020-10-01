@@ -356,12 +356,9 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
       maxLength: 5,
       onTap: ()async{
         FocusScope.of(context).requestFocus(new FocusNode());
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context){
-            return AlertDialog(
-              content: ListView.builder(
+        scafoldkey.currentState.showBottomSheet(
+          (context) => Container(
+            child: ListView.builder(
                 itemBuilder: (context,index){
                   return ListTile(
                     leading: Icon(FontAwesomeIcons.city),
@@ -378,8 +375,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
                 },
                 itemCount: codigoPostal.length,
                 ),
-            );
-          }
+          )
         );
       },
       initialValue: (_postal=="")?"+503":null,
@@ -504,9 +500,9 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         ),
         onTap: ()async{
           FocusScope.of(context).requestFocus(new FocusNode());
-          await showDialog(context: context,
-          builder: (context)=>AlertDialog(
-            content: ListView.builder(
+          scafoldkey.currentState.showBottomSheet(
+            (context) => Container(
+              child: ListView.builder(
               itemBuilder: (context,index){
                 return ListTile(
                   title: Text(snapshot.data[index].nombre),
@@ -525,7 +521,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               },
               itemCount: snapshot.data.length,
             ),
-          ) 
+            )
           );
         },
         initialValue: (_departamento=="")?empresaModel.departamento:null,
@@ -547,9 +543,9 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         ),
         onTap: ()async{
           FocusScope.of(context).requestFocus(new FocusNode());
-          await showDialog(context: context,
-          builder: (context)=>AlertDialog(
-            content: ListView.builder(
+          scafoldkey.currentState.showBottomSheet(
+            (context) => Container(
+              child: ListView.builder(
               itemBuilder: (context,index){
                 return ListTile(
                   title: Text(departamentoProvider.listaMunicipios[index].nombre),
@@ -566,7 +562,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               },
               itemCount:departamentoProvider.listaMunicipios.length,
             ),
-          ) 
+            )
           );
         },
         initialValue: (_municipio=="")?empresaModel.municipio:null,
@@ -587,9 +583,10 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
         ),
         onTap: ()async{
           FocusScope.of(context).requestFocus(new FocusNode());
-          await showDialog(context: context,
-          builder: (context)=>AlertDialog(
-            content: ListView.builder(
+          scafoldkey.currentState.showBottomSheet(
+            (context) => Container(
+              height: 240,
+              child: ListView.builder(
               itemBuilder: (context,index){
                 return ListTile(
                   title: Text(giros[index]),
@@ -609,7 +606,7 @@ class _ActualizarEmpresaState extends State<ActualizarEmpresa>{
               },
               itemCount:giros.length,
             ),
-          ) 
+            )
           );
         },
         initialValue: (_giro=="")?empresaModel.giro:null,

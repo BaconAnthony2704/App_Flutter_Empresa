@@ -15,8 +15,10 @@ class EditProduct extends StatefulWidget {
   @override
   _EditProductState createState() => _EditProductState();
 }
+final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
 class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClientMixin{
+  
   String nombre="",detalle="",descripcion="",tipo,categoria;
   EmpresaProvider empresaProvider;
   double precio=0.0, existencia=0.0;
@@ -63,6 +65,7 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
        
     }
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text(tituloInterfaz),
         actions: <Widget>[
@@ -395,10 +398,9 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
       ),
       onTap: ()async{
         FocusScope.of(context).requestFocus(new FocusNode());
-        await showDialog(context: context,
-        builder: (context)=>AlertDialog(
-          content: Container(
-            height: MediaQuery.of(context).size.height*.3,
+        scaffoldKey.currentState.showBottomSheet(
+          (context) => Container(
+            height: 240,
             child: FutureBuilder<List<TipoProductoModel>>(
               future: productoProvider.getTodosTipoProducto(idempresa),
               builder: (context,snapshot){
@@ -428,7 +430,6 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                 );
               }
             ),
-          ),
         ));
       },
       controller: txtTipo,
@@ -447,9 +448,8 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
       ),
       onTap: ()async{
         FocusScope.of(context).requestFocus(new FocusNode());
-        await showDialog(context: context,
-        builder: (context)=>AlertDialog(
-          content: Container(
+        scaffoldKey.currentState.showBottomSheet(
+          (context) =>Container(
             height: MediaQuery.of(context).size.height*.4,
             child: FutureBuilder<List<CategoriaModel>>(
               future: productoProvider.obtenerCategoriasProducto(idempresa),
@@ -477,8 +477,8 @@ class _EditProductState extends State<EditProduct> with AutomaticKeepAliveClient
                 );
               }
             ),
-          ),
-        ));
+          )
+        );
       },
       controller: txtCategoria,
     );

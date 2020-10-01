@@ -15,8 +15,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DBProvider{
-  /*Indicamos las variables estaticas para saber si creamos una tabla, si la tabla
-  existe, escribir, en ella y no estar generando muchas tablas del mismo tipo  */
+  /*Indicamos las variables estaticas para saber si 
+  creamos una tabla, si la tabla
+  existe, escribir, en ella y no estar generando muchas 
+  tablas del mismo tipo  */
   //Instancia privada .()
   static Database _database;
   static final DBProvider db=DBProvider._();
